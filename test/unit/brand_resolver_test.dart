@@ -7,10 +7,10 @@ import 'package:subsy/features/subscriptions/domain/enums.dart';
 void main() {
   const resolver = BrandResolver();
 
-  test('all 12 mandatory services are present with color and logo', () {
+  test('all mandatory services are present with color and logo', () {
     const mandatory = [
       'spotify', 'netflix', 'youtube_premium', 'apple_tv_plus', 'icloud_plus',
-      'chatgpt_plus', 'claude_pro', 'exxen', 'gain', 'blutv',
+      'chatgpt', 'claude_pro', 'exxen', 'gain', 'blutv',
       'trendyol_premium', 'amazon_prime',
     ];
     final keys = kBrandCatalog.map((e) => e.serviceKey).toSet();
@@ -48,8 +48,9 @@ void main() {
     final cases = {
       'YT Premium': 'youtube_premium',
       'youtube': 'youtube_premium',
-      'chatgpt': 'chatgpt_plus',
-      'openai': 'chatgpt_plus',
+      'chatgpt': 'chatgpt',
+      'openai': 'chatgpt',
+      'chatgpt pro': 'chatgpt',
       'prime video': 'amazon_prime',
       'trendyol': 'trendyol_premium',
       'icloud': 'icloud_plus',

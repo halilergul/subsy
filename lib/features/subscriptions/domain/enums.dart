@@ -31,6 +31,12 @@ enum SubscriptionCategory {
   cloud,
   ai,
   productivity,
+  gaming,
+  education,
+  health,
+  books,
+  security,
+  connectivity,
   shopping,
   other,
 }

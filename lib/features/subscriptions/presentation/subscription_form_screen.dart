@@ -31,6 +31,12 @@ class _SubscriptionFormScreenState extends ConsumerState<SubscriptionFormScreen>
     SubscriptionCategory.cloud: 'Bulut',
     SubscriptionCategory.ai: 'Yapay zeka',
     SubscriptionCategory.productivity: 'Üretkenlik',
+    SubscriptionCategory.gaming: 'Oyun',
+    SubscriptionCategory.education: 'Eğitim',
+    SubscriptionCategory.health: 'Sağlık',
+    SubscriptionCategory.books: 'Kitap',
+    SubscriptionCategory.security: 'Güvenlik',
+    SubscriptionCategory.connectivity: 'İnternet & Mobil',
     SubscriptionCategory.shopping: 'Alışveriş',
     SubscriptionCategory.other: 'Diğer',
   };
