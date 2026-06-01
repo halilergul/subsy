@@ -84,3 +84,15 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Konu:** Mobil / Tooling
 - **Detay:** `SubsyApp.build` içinde `ref.watch`'lanan bir Provider'ın build gövdesinde, override gerektiren (UnimplementedError fırlatan) veya henüz hazır olmayan (`isarDatabaseProvider.requireValue`) bir provider'ı doğrudan `ref.watch` etmek, boot smoke testini (ve override edilmemiş ortamları) çökertir.
 - **Çözüm/Önlem:** Best-effort sync'lerde okumaları async gövde içine al + `try/catch` ile sar; DB gerekiyorsa `await ref.read(isarDatabaseProvider.future)`. (exchange_rate_sync.dart deseni; reminder_sync de asData?.value ile null-safe.)
+
+### home_widget: native iskele + iOS Xcode manuel adımı
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Native
+- **Detay:** Widget UI native'dir. Android tarafı tamamen dosya-tabanlı (receiver Manifest'te, `SubsyWidgetProvider` + `res/layout` + `res/xml`). iOS tarafı bir **WidgetKit extension target'ı** gerektirir — `project.pbxproj` güvenilir şekilde script'lenemez, bu yüzden target + App Group capability **Xcode'da elle** eklenir (bkz. `ios/SubsyWidget/README.md`). App Group: `group.com.halilergul.subsy` hem Runner hem extension'da olmalı; `HomeWidget.setAppGroupId(...)` main'de çağrılır.
+- **Çözüm/Önlem:** Dart payload hattı (saf `buildWidgetPayload` + `publishWidget`) test edilir; native render cihazda doğrulanır. Logic native'e taşınmaz — native yalnızca `state` key'ine göre hazır Türkçe string'leri render eder. v1'de marka logosu native'de yok (Flutter SVG asset'i native widget'a taşınmıyor) → servis adı gösterilir.
+
+### ref.listen tabanlı sync'i ProviderContainer'da test etmek kırılgan
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Tooling
+- **Detay:** `Provider<void>` içinde `ref.listen` + stream emisyonu, bare `ProviderContainer` testinde zamanlama nedeniyle güvenilir tetiklenmiyor (publish hiç çalışmadı). reminder_sync deseni de bunu yapmaz.
+- **Çözüm/Önlem:** Orkestrasyon mantığını top-level saf bir fonksiyona çıkar (`publishWidget(service, {...})`) ve onu doğrudan fake ile test et; provider yalnızca ince bir `ref.listen` sarmalayıcı olsun (reminder_sync'in `rescheduleAll`'ı gibi).

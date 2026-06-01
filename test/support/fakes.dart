@@ -7,6 +7,8 @@ import 'package:subsy/features/currency/domain/currency_constants.dart';
 import 'package:subsy/features/currency/domain/exchange_rates.dart';
 import 'package:subsy/features/currency/domain/exchange_rates_repository.dart';
 import 'package:subsy/features/currency/domain/target_currency_repository.dart';
+import 'package:subsy/features/home_widget/domain/home_widget_service.dart';
+import 'package:subsy/features/home_widget/domain/widget_payload.dart';
 import 'package:subsy/features/notifications/domain/notification_scheduler.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/notifications/domain/planned_reminder.dart';
@@ -141,5 +143,22 @@ class FakeTargetCurrencyRepository implements TargetCurrencyRepository {
   Stream<Currency> watch() async* {
     yield _currency;
     yield* _controller.stream;
+  }
+}
+
+/// Records published home-widget payloads for tests; never touches the OS.
+class FakeHomeWidgetService implements HomeWidgetService {
+  WidgetPayload? lastPayload;
+  int publishCount = 0;
+
+  @override
+  Future<void> publish(WidgetPayload payload) async {
+    lastPayload = payload;
+    publishCount++;
+  }
+
+  @override
+  Future<void> clear() async {
+    lastPayload = const WidgetPayload.empty();
   }
 }
