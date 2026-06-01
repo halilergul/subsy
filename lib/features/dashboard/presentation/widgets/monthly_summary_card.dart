@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:subsy/features/currency/presentation/widgets/unified_total_card.dart';
 import 'package:subsy/features/dashboard/domain/currency_summary.dart';
 import 'package:subsy/shared/utils/money_format.dart';
 
 /// Monthly spend summary. One row per currency (no cross-currency total),
-/// each showing the monthly-normalized amount with a "/ay" suffix.
+/// each showing the monthly-normalized amount with a "/ay" suffix. Below the
+/// per-currency rows, the premium unified total (or its teaser) is shown.
 class MonthlySummaryCard extends StatelessWidget {
   const MonthlySummaryCard({super.key, required this.totals});
 
@@ -52,6 +54,7 @@ class MonthlySummaryCard extends StatelessWidget {
                   ],
                 ),
               ),
+            const UnifiedTotalCard(),
           ],
         ),
       ),

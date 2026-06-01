@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subsy/core/errors/app_error.dart';
+import 'package:subsy/features/currency/presentation/widgets/unified_total_view.dart';
 import 'package:subsy/features/statistics/application/statistics_providers.dart';
 import 'package:subsy/features/statistics/domain/category_breakdown.dart';
 import 'package:subsy/features/statistics/domain/ranked_subscription.dart';
@@ -34,6 +35,7 @@ class StatisticsScreen extends ConsumerWidget {
             children: [
               const _PeriodToggle(),
               const SizedBox(height: 20),
+              const UnifiedTotalView(),
               for (final breakdown in view.breakdowns)
                 _CurrencySection(
                   breakdown: breakdown,

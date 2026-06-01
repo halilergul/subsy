@@ -72,3 +72,15 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Konu:** Mobil / Tooling
 - **Detay:** `flutter_riverpod` 3.x'te `StateProvider` ana export'tan çıkarıldı; sadece `flutter_riverpod.dart` import edince "The function 'StateProvider' isn't defined" hatası verir.
 - **Çözüm/Önlem:** `StateProvider` kullanan dosyalarda ek olarak `import 'package:flutter_riverpod/legacy.dart';` ekle. Sadece provider tanımının olduğu dosyada gerekir — `.notifier`/`.state` erişimi (örn. `ref.read(p.notifier).state = x`) ana export ile çalışır, tüketici widget'ta legacy import gerekmez. (statistics_providers.dart örneği.)
+
+### frankfurter API: host taşındı + base `rates`'te yok
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Altyapı
+- **Detay:** `api.frankfurter.app` artık `api.frankfurter.dev`'e **301 redirect** ediyor — `.app` çağrılırsa fazladan hop olur. Ayrıca API yanıtındaki `rates` objesi **base para birimini içermez** (örn. `base=EUR` çağrısında EUR `rates`'te yoktur). Çevrim için base'i `1.0` olarak haritaya elle eklemek gerekir.
+- **Çözüm/Önlem:** Doğrudan `https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD,TRY` çağır; parse'ta `map[base] = 1.0` enjekte et. (HttpExchangeRateService.) TRY ECB üzerinden destekleniyor.
+
+### App-root sync provider'ları guard'lı olmalı
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Tooling
+- **Detay:** `SubsyApp.build` içinde `ref.watch`'lanan bir Provider'ın build gövdesinde, override gerektiren (UnimplementedError fırlatan) veya henüz hazır olmayan (`isarDatabaseProvider.requireValue`) bir provider'ı doğrudan `ref.watch` etmek, boot smoke testini (ve override edilmemiş ortamları) çökertir.
+- **Çözüm/Önlem:** Best-effort sync'lerde okumaları async gövde içine al + `try/catch` ile sar; DB gerekiyorsa `await ref.read(isarDatabaseProvider.future)`. (exchange_rate_sync.dart deseni; reminder_sync de asData?.value ile null-safe.)

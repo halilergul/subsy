@@ -1,6 +1,14 @@
+import 'dart:async';
+
 import 'package:subsy/core/errors/app_error.dart';
+import 'package:subsy/core/exchange/exchange_rate_service.dart';
 import 'package:subsy/core/result/result.dart';
+import 'package:subsy/features/currency/domain/currency_constants.dart';
+import 'package:subsy/features/currency/domain/exchange_rates.dart';
+import 'package:subsy/features/currency/domain/exchange_rates_repository.dart';
+import 'package:subsy/features/currency/domain/target_currency_repository.dart';
 import 'package:subsy/features/notifications/domain/notification_scheduler.dart';
+import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/notifications/domain/planned_reminder.dart';
 import 'package:subsy/features/subscriptions/domain/premium_status.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
@@ -79,5 +87,59 @@ class FakeNotificationScheduler implements NotificationScheduler {
   @override
   Future<void> scheduleAll(List<PlannedReminder> reminders) async {
     scheduled = List.of(reminders);
+  }
+}
+
+/// Returns a canned rates result (or failure) without touching the network.
+class FakeExchangeRateService implements ExchangeRateService {
+  FakeExchangeRateService(this.result);
+  Result<ExchangeRates> result;
+
+  @override
+  Future<Result<ExchangeRates>> fetchLatest() async => result;
+}
+
+/// In-memory rate cache for tests.
+class FakeExchangeRatesRepository implements ExchangeRatesRepository {
+  FakeExchangeRatesRepository([this._rates]);
+  ExchangeRates? _rates;
+  final _controller = StreamController<ExchangeRates?>.broadcast();
+
+  @override
+  Future<ExchangeRates?> load() async => _rates;
+
+  @override
+  Future<void> save(ExchangeRates rates) async {
+    _rates = rates;
+    _controller.add(rates);
+  }
+
+  @override
+  Stream<ExchangeRates?> watch() async* {
+    yield _rates;
+    yield* _controller.stream;
+  }
+}
+
+/// In-memory target-currency setting for tests.
+class FakeTargetCurrencyRepository implements TargetCurrencyRepository {
+  FakeTargetCurrencyRepository([Currency? initial])
+      : _currency = initial ?? kDefaultTargetCurrency;
+  Currency _currency;
+  final _controller = StreamController<Currency>.broadcast();
+
+  @override
+  Future<Currency> load() async => _currency;
+
+  @override
+  Future<void> save(Currency currency) async {
+    _currency = currency;
+    _controller.add(currency);
+  }
+
+  @override
+  Stream<Currency> watch() async* {
+    yield _currency;
+    yield* _controller.stream;
   }
 }

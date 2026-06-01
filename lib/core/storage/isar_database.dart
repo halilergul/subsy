@@ -1,5 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:subsy/features/currency/data/exchange_rates_entity.dart';
+import 'package:subsy/features/currency/data/target_currency_entity.dart';
 import 'package:subsy/features/notifications/data/notification_settings_entity.dart';
 import 'package:subsy/features/subscriptions/data/subscription_entity.dart';
 
@@ -14,6 +16,8 @@ class IsarDatabase {
   static const List<CollectionSchema<dynamic>> _schemas = [
     SubscriptionEntitySchema,
     NotificationSettingsEntitySchema,
+    ExchangeRatesEntitySchema,
+    TargetCurrencyEntitySchema,
   ];
 
   /// Opens the production database in the app documents directory. Reuses an

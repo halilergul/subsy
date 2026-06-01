@@ -3,8 +3,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:http/http.dart' as http;
 import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/app/theme/app_theme.dart';
+import 'package:subsy/core/exchange/http_exchange_rate_service.dart';
+import 'package:subsy/features/currency/application/currency_providers.dart';
+import 'package:subsy/features/currency/application/exchange_rate_sync.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/features/notifications/data/local_notification_service.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -26,6 +30,8 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         notificationSchedulerProvider.overrideWithValue(scheduler),
+        exchangeRateServiceProvider
+            .overrideWithValue(HttpExchangeRateService(http.Client())),
       ],
       child: const SubsyApp(),
     ),
@@ -42,6 +48,8 @@ class SubsyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Activate reactive reminder rescheduling for the app's lifetime.
     startReminderSync(ref);
+    // Best-effort exchange-rate refresh (cache-first; offline-safe).
+    startExchangeRateSync(ref);
 
     return MaterialApp.router(
       title: 'Subsy',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:subsy/features/currency/presentation/widgets/converted_amount_preview.dart';
 import 'package:subsy/features/subscriptions/application/subscription_form_controller.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
@@ -143,6 +144,10 @@ class _SubscriptionFormScreenState extends ConsumerState<SubscriptionFormScreen>
                   const SizedBox(width: 12),
                   CurrencySelector(value: s.currency, onChanged: _controller.setCurrency),
                 ],
+              ),
+              ConvertedAmountPreview(
+                amount: double.tryParse(s.amountText.trim().replaceAll(',', '.')),
+                from: s.currency,
               ),
               const SizedBox(height: 20),
               Text('Dönem', style: theme.textTheme.labelLarge),
