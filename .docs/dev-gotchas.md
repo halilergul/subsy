@@ -55,6 +55,12 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Detay:** (1) `AsyncValue.valueOrNull` bu sürümde yok — veri/null için `asData?.value` kullan. (2) Codegen'siz `NotifierProvider.family` base-class API'si (3.x'te `AutoDispose*` sınıfları kaldırıldı, birleşik `Notifier`) belirsiz/karışık; form controller'ı bu yüzden plain `ChangeNotifier` yapıldı (use case'ler constructor'dan enjekte, ekran provider'lardan `ref.read` ile kurar). Daha kolay test edilebilir bonus.
 - **Çözüm/Önlem:** Form/ekran controller'ları için `ChangeNotifier` + DI deseni tercih et; AsyncValue'dan veri çekerken `asData?.value`. Provider'lar (use case wiring) manuel `Provider`/`StreamProvider` olarak yazılıyor (riverpod_generator yalnızca gerektiğinde).
 
+### flutter_local_notifications 22.0-dev API farkları
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Bildirim
+- **Detay:** 22.0.0-dev.3 sürümünde imzalar stable'dan farklı: `initialize(settings: const InitializationSettings(...))` (named, positional değil); `zonedSchedule` `title`/`body`'yi NAMED parametre olarak alır (NotificationDetails içinde değil) ve `androidScheduleMode` zorunlu; `AndroidInitializationSettings('@mipmap/ic_launcher')` positional; iOS sınıfı `IOSFlutterLocalNotificationsPlugin.requestPermissions(alert/badge/sound)`, Android `requestNotificationsPermission()`.
+- **Çözüm/Önlem:** Paket güncellenince imzaları tekrar doğrula. Zamanlama `AndroidScheduleMode.inexactAllowWhileIdle` (exact-alarm izni gerekmez). `flutter_timezone` 5.x `getLocalTimezone()` → `TimezoneInfo`, IANA adı `.identifier`. Bkz. `lib/features/notifications/data/local_notification_service.dart`.
+
 ### Widget testinde ListView'de alt buton "bulunamıyor"
 - **Tarih:** 2026-06-01
 - **Konu:** Test

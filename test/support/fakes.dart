@@ -1,5 +1,7 @@
 import 'package:subsy/core/errors/app_error.dart';
 import 'package:subsy/core/result/result.dart';
+import 'package:subsy/features/notifications/domain/notification_scheduler.dart';
+import 'package:subsy/features/notifications/domain/planned_reminder.dart';
 import 'package:subsy/features/subscriptions/domain/premium_status.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
 import 'package:subsy/features/subscriptions/domain/subscription_repository.dart';
@@ -52,4 +54,30 @@ class FakePremium implements PremiumStatus {
   FakePremium(this.isPremium);
   @override
   bool isPremium;
+}
+
+/// Records scheduling calls for notification tests; never touches the OS.
+class FakeNotificationScheduler implements NotificationScheduler {
+  FakeNotificationScheduler({this.permission = true});
+
+  bool permission;
+  int cancelAllCount = 0;
+  List<PlannedReminder> scheduled = [];
+
+  @override
+  Future<bool> requestPermission() async => permission;
+
+  @override
+  Future<bool> hasPermission() async => permission;
+
+  @override
+  Future<void> cancelAll() async {
+    cancelAllCount++;
+    scheduled = [];
+  }
+
+  @override
+  Future<void> scheduleAll(List<PlannedReminder> reminders) async {
+    scheduled = List.of(reminders);
+  }
 }

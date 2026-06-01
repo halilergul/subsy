@@ -19,7 +19,16 @@ class DashboardScreen extends ConsumerWidget {
     final hasItems = upcoming.asData?.value.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Subsy')),
+      appBar: AppBar(
+        title: const Text('Subsy'),
+        actions: [
+          IconButton(
+            tooltip: 'Bildirimler',
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push(Routes.notificationSettings),
+          ),
+        ],
+      ),
       body: upcoming.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _ErrorView(
