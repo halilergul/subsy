@@ -27,6 +27,11 @@ final class NotFoundError extends AppError {
   const NotFoundError({super.message = 'Kayıt bulunamadı.', super.cause});
 }
 
+/// Input validation failure. Carries a field-specific Turkish message.
+final class ValidationError extends AppError {
+  const ValidationError({required super.message, super.cause});
+}
+
 /// Free-tier limit reached (e.g. max 5 subscriptions without premium).
 final class LimitReachedError extends AppError {
   const LimitReachedError({super.message = 'Ücretsiz sürüm sınırına ulaştınız.', super.cause});

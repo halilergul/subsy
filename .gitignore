@@ -77,6 +77,12 @@ coverage/
 *.g.dart
 *.freezed.dart
 
+# Isar native binary downloaded by initializeIsarCore(download: true) for tests
+libisar.dylib
+libisar*.so
+isar*.dll
+libisar*.dll
+
 # IDE (Flutter)
 *.iml
 *.ipr
