@@ -1,6 +1,16 @@
 import 'package:subsy/features/subscriptions/domain/brand_catalog_entry.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 
+/// Looks up a catalog entry by its exact service key (the value stored on a
+/// subscription). Returns null for null/unknown keys.
+BrandCatalogEntry? brandByKey(String? serviceKey) {
+  if (serviceKey == null) return null;
+  for (final entry in kBrandCatalog) {
+    if (entry.serviceKey == serviceKey) return entry;
+  }
+  return null;
+}
+
 /// The bundled, offline brand catalog. The 12 Turkey-focused services below
 /// are mandatory at launch (FR-011); the list may be extended over time.
 /// Brand colors are the implementation starting point per data-model.md.

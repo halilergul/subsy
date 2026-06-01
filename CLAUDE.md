@@ -162,9 +162,11 @@ Stack detayları `.docs/CONSTITUTION.md` içinde tanımlanmıştır. Her agent k
 - Constitution'da onaylanmış kararları agent kendi başına değiştirmez
 
 <!-- SPECKIT START -->
-Active feature: `001-subscriptions-core`
-Current plan: `specs/001-subscriptions-core/plan.md`
+Active feature: `002-dashboard`
+Current plan: `specs/002-dashboard/plan.md`
 (see also: spec.md, research.md, data-model.md, contracts/, quickstart.md in that folder)
+
+Completed: `001-subscriptions-core` (data foundation — merged to master).
 
 Stack note: this project is **Flutter** (not the mobile-expo profile the scaffold ships).
 Source of truth for tech decisions: `.docs/CONSTITUTION.md`.
