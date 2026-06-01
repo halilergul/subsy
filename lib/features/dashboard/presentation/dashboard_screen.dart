@@ -23,6 +23,11 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('Subsy'),
         actions: [
           IconButton(
+            tooltip: 'İstatistikler',
+            icon: const Icon(Icons.pie_chart_outline),
+            onPressed: () => context.push(Routes.statistics),
+          ),
+          IconButton(
             tooltip: 'Bildirimler',
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => context.push(Routes.notificationSettings),

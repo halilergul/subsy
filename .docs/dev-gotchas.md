@@ -66,3 +66,9 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Konu:** Test
 - **Detay:** Form `ListView` içinde; varsayılan 800x600 test yüzeyinde alttaki "Kaydet" butonu lazy-build nedeniyle ağaçta olmadığından `find.text` 0 bulur, `tap` patlar.
 - **Çözüm/Önlem:** Testte `tester.view.physicalSize = Size(1080, 2600)` + `devicePixelRatio = 1.0` ile uzun yüzey kur (tearDown'da reset), ya da `scrollUntilVisible` kullan. Bkz. `test/widget/subscription_form_screen_test.dart`.
+
+### Riverpod 3.x: `StateProvider` legacy export'ta
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / Tooling
+- **Detay:** `flutter_riverpod` 3.x'te `StateProvider` ana export'tan çıkarıldı; sadece `flutter_riverpod.dart` import edince "The function 'StateProvider' isn't defined" hatası verir.
+- **Çözüm/Önlem:** `StateProvider` kullanan dosyalarda ek olarak `import 'package:flutter_riverpod/legacy.dart';` ekle. Sadece provider tanımının olduğu dosyada gerekir — `.notifier`/`.state` erişimi (örn. `ref.read(p.notifier).state = x`) ana export ile çalışır, tüketici widget'ta legacy import gerekmez. (statistics_providers.dart örneği.)

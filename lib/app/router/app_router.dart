@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:subsy/features/notifications/presentation/notification_settings_screen.dart';
+import 'package:subsy/features/statistics/presentation/statistics_screen.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
 import 'package:subsy/features/subscriptions/presentation/subscription_form_screen.dart';
 
@@ -11,6 +12,7 @@ abstract final class Routes {
   static const String addSubscription = '/subscription/add';
   static const String editSubscription = '/subscription/edit'; // extra: Subscription
   static const String notificationSettings = '/settings/notifications';
+  static const String statistics = '/statistics';
 }
 
 /// App router. Feature routes are added as each feature lands.
@@ -33,6 +35,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Routes.notificationSettings,
       builder: (context, state) => const NotificationSettingsScreen(),
+    ),
+    GoRoute(
+      path: Routes.statistics,
+      builder: (context, state) => const StatisticsScreen(),
     ),
   ],
 );
