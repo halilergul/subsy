@@ -48,3 +48,15 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Konu:** Mobil / Dart
 - **Detay:** TRY için enum sabiti `try` olamaz (Dart anahtar kelimesi). `tryl` kullanıldı; ISO kodu `.code` getter'ından (`'TRY'`) gelir.
 - **Çözüm/Önlem:** Para birimi kodu gerekince `currency.code`, eşleme için `Currency.fromCode('TRY')`.
+
+### Riverpod 3.2.1: AsyncValue getter'ı + family Notifier API
+- **Tarih:** 2026-06-01
+- **Konu:** Mobil / State
+- **Detay:** (1) `AsyncValue.valueOrNull` bu sürümde yok — veri/null için `asData?.value` kullan. (2) Codegen'siz `NotifierProvider.family` base-class API'si (3.x'te `AutoDispose*` sınıfları kaldırıldı, birleşik `Notifier`) belirsiz/karışık; form controller'ı bu yüzden plain `ChangeNotifier` yapıldı (use case'ler constructor'dan enjekte, ekran provider'lardan `ref.read` ile kurar). Daha kolay test edilebilir bonus.
+- **Çözüm/Önlem:** Form/ekran controller'ları için `ChangeNotifier` + DI deseni tercih et; AsyncValue'dan veri çekerken `asData?.value`. Provider'lar (use case wiring) manuel `Provider`/`StreamProvider` olarak yazılıyor (riverpod_generator yalnızca gerektiğinde).
+
+### Widget testinde ListView'de alt buton "bulunamıyor"
+- **Tarih:** 2026-06-01
+- **Konu:** Test
+- **Detay:** Form `ListView` içinde; varsayılan 800x600 test yüzeyinde alttaki "Kaydet" butonu lazy-build nedeniyle ağaçta olmadığından `find.text` 0 bulur, `tap` patlar.
+- **Çözüm/Önlem:** Testte `tester.view.physicalSize = Size(1080, 2600)` + `devicePixelRatio = 1.0` ile uzun yüzey kur (tearDown'da reset), ya da `scrollUntilVisible` kullan. Bkz. `test/widget/subscription_form_screen_test.dart`.

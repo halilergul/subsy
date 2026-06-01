@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/core/errors/app_error.dart';
 import 'package:subsy/features/dashboard/application/dashboard_providers.dart';
 import 'package:subsy/features/dashboard/presentation/widgets/dashboard_empty_state.dart';
@@ -41,7 +43,13 @@ class DashboardScreen extends ConsumerWidget {
               final payment = items[index - 1];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: PaymentListItem(payment: payment),
+                child: PaymentListItem(
+                  payment: payment,
+                  onTap: () => context.push(
+                    Routes.editSubscription,
+                    extra: payment.subscription,
+                  ),
+                ),
               );
             },
           );
@@ -56,13 +64,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  /// Navigates toward the add-subscription flow. The destination screen is a
-  /// separate, later feature; for now this is a placeholder.
-  void _onAdd(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Abonelik ekleme yakında.')),
-    );
-  }
+  /// Opens the add-subscription form.
+  void _onAdd(BuildContext context) => context.push(Routes.addSubscription);
 }
 
 class _ErrorView extends StatelessWidget {
