@@ -5,6 +5,7 @@ import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/app/theme/app_tokens.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 
 /// App settings: a premium banner plus grouped rows for the real, on-device
 /// settings (reminders, appearance, replaying onboarding, app info). No fake
@@ -26,12 +27,10 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTokens.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Ayarlar', style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(context, title: 'Ayarlar'),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: EdgeInsets.fromLTRB(20, glassTopInset(context), 20, 32),
         children: [
           _PremiumBanner(isPremium: isPremium),
           const SizedBox(height: 22),

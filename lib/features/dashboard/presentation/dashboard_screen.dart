@@ -57,7 +57,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           data: (items) => items.isEmpty
               ? Column(
                   children: [
-                    const _TopBar(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: _TopBar(),
+                    ),
                     Expanded(child: DashboardEmptyState(onAdd: () => _onAdd(context))),
                   ],
                 )
@@ -117,7 +120,7 @@ class _Content extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
       children: [
         const _TopBar(),
         const SizedBox(height: 18),

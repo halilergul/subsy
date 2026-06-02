@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:subsy/app/router/app_router.dart';
+import 'package:subsy/app/theme/app_tokens.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/features/notifications/domain/notification_settings.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 
 /// Reminder settings: enable/disable, lead days, time of day. Saving persists
 /// on-device and triggers rescheduling reactively.
@@ -47,12 +49,14 @@ class _NotificationSettingsScreenState
     final async = ref.watch(notificationSettingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bildirimler')),
+      backgroundColor: AppTokens.bg,
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(context, title: 'Bildirimler'),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => const Center(child: Text('Ayarlar yüklenemedi.')),
         data: (s) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(16, glassTopInset(context), 16, 16),
           children: [
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

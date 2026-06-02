@@ -13,6 +13,7 @@ import 'package:subsy/features/subscriptions/presentation/widgets/add_form_sheet
 import 'package:subsy/shared/constants/category_style.dart';
 import 'package:subsy/shared/utils/money_format.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 
 /// Read-only subscription detail with a category-tinted gradient hero, the
 /// amount breakdown, metadata, and edit/delete. Edit opens the form sheet;
@@ -45,8 +46,9 @@ class SubscriptionDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTokens.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(
+        context,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -64,7 +66,7 @@ class SubscriptionDetailScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: EdgeInsets.fromLTRB(20, glassTopInset(context), 20, 32),
         children: [
           _hero(s, catColor, periodLabel),
           const SizedBox(height: 20),

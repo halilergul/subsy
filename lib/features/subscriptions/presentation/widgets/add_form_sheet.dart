@@ -42,22 +42,89 @@ Future<bool?> showAddFormSheet(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: AppTokens.scrim,
-    builder: (_) => _AddFormSheet(entry: entry, initialName: initialName, editing: editing),
+    builder: (ctx) => AddFormSheetShell(
+      child: AddSubscriptionForm(
+        editing: editing,
+        entry: entry,
+        initialName: initialName,
+        onClose: () => Navigator.of(ctx).pop(false),
+        onSaved: () => Navigator.of(ctx).pop(true),
+      ),
+    ),
   );
 }
 
-class _AddFormSheet extends ConsumerStatefulWidget {
-  const _AddFormSheet({this.entry, this.initialName, this.editing});
+/// Keyboard-aware sheet container (grabber + rounded top + grows with the
+/// keyboard) that hosts an [AddSubscriptionForm]. Reused by the standalone edit
+/// sheet and the add-flow's form step.
+class AddFormSheetShell extends StatelessWidget {
+  const AddFormSheetShell({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.92;
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            color: AppTokens.sheet,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: AppTokens.hair2, width: 0.5)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 9, bottom: 4),
+                width: 38,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: AppTokens.grabber,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              Flexible(child: child),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The subscription detail form content (no sheet chrome of its own). For ADD:
+/// pass [entry]/[initialName] and [onBack] to return to the picker step. For
+/// EDIT: pass [editing]. Calls [onSaved] once a save succeeds.
+class AddSubscriptionForm extends ConsumerStatefulWidget {
+  const AddSubscriptionForm({
+    super.key,
+    this.entry,
+    this.initialName,
+    this.editing,
+    this.onBack,
+    required this.onClose,
+    required this.onSaved,
+  });
 
   final BrandCatalogEntry? entry;
   final String? initialName;
   final Subscription? editing;
+  final VoidCallback? onBack;
+  final VoidCallback onClose;
+  final VoidCallback onSaved;
 
   @override
-  ConsumerState<_AddFormSheet> createState() => _AddFormSheetState();
+  ConsumerState<AddSubscriptionForm> createState() =>
+      _AddSubscriptionFormState();
 }
 
-class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
+class _AddSubscriptionFormState extends ConsumerState<AddSubscriptionForm> {
   late final SubscriptionFormController _controller;
   late final TextEditingController _amountCtrl;
   late final TextEditingController _nameCtrl;
@@ -67,7 +134,8 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
   /// picked brand (the name is fixed by the brand preview header).
   bool get _showNameField => widget.editing != null || widget.entry == null;
 
-  String? get _previewServiceKey => widget.editing?.serviceKey ?? widget.entry?.serviceKey;
+  String? get _previewServiceKey =>
+      widget.editing?.serviceKey ?? widget.entry?.serviceKey;
 
   @override
   void initState() {
@@ -83,7 +151,8 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
     if (widget.editing == null && entry != null) {
       _controller.setName(entry.displayName);
       _controller.setCategory(entry.defaultCategory);
-    } else if (widget.editing == null && (widget.initialName ?? '').isNotEmpty) {
+    } else if (widget.editing == null &&
+        (widget.initialName ?? '').isNotEmpty) {
       _controller.setName(widget.initialName!);
     }
     final s = _controller.state;
@@ -95,7 +164,7 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
 
   void _onChanged() {
     if (_controller.state.saved && mounted) {
-      Navigator.of(context).pop(true);
+      widget.onSaved();
     }
   }
 
@@ -130,89 +199,78 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final maxHeight = MediaQuery.of(context).size.height * 0.92;
-    return Padding(
-      // grow with the keyboard
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            color: AppTokens.sheet,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: AppTokens.hair2, width: 0.5)),
-          ),
-          child: ListenableBuilder(
-            listenable: _controller,
-            builder: (context, _) {
-              final s = _controller.state;
-              return Column(
-                mainAxisSize: MainAxisSize.min,
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        final s = _controller.state;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _header(),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
                 children: [
-                  _grabber(),
-                  _header(),
-                  Flexible(
-                    child: ListView(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                      children: [
-                        _brandPreview(s),
-                        if (_showNameField) ...[
-                          const SizedBox(height: 16),
-                          _NameField(controller: _nameCtrl, onChanged: _controller.setName),
-                        ],
-                        const SizedBox(height: 20),
-                        const _Label('Tutar'),
-                        const SizedBox(height: 10),
-                        _amountRow(s),
-                        ConvertedAmountPreview(
-                          amount: double.tryParse(s.amountText.trim().replaceAll(',', '.')),
-                          from: s.currency,
-                        ),
-                        const SizedBox(height: 20),
-                        const _Label('Periyot'),
-                        const SizedBox(height: 10),
-                        _PeriodSegment(value: s.billingPeriod, onChanged: _controller.setBillingPeriod),
-                        const SizedBox(height: 16),
-                        _infoCard([
-                          _InfoRow(
-                            label: 'Sonraki yenileme',
-                            value: _formatDate(s.nextRenewalDate),
-                            onTap: _pickDate,
-                          ),
-                          _InfoRow(
-                            label: 'Kategori',
-                            value: s.category == null ? 'Otomatik' : kCategoryLabels[s.category]!,
-                            dotColor: s.category == null ? null : categoryColor(s.category!),
-                            onTap: _pickCategory,
-                            last: true,
-                          ),
-                        ]),
-                        const SizedBox(height: 12),
-                        _notesCard(),
-                        if (s.errorMessage != null) ...[
-                          const SizedBox(height: 14),
-                          _errorBox(s.errorMessage!),
-                        ],
-                      ],
+                  _brandPreview(s),
+                  if (_showNameField) ...[
+                    const SizedBox(height: 16),
+                    _NameField(
+                      controller: _nameCtrl,
+                      onChanged: _controller.setName,
                     ),
+                  ],
+                  const SizedBox(height: 20),
+                  const _Label('Tutar'),
+                  const SizedBox(height: 10),
+                  _amountRow(s),
+                  ConvertedAmountPreview(
+                    amount: double.tryParse(
+                      s.amountText.trim().replaceAll(',', '.'),
+                    ),
+                    from: s.currency,
                   ),
-                  _footer(s),
+                  const SizedBox(height: 20),
+                  const _Label('Periyot'),
+                  const SizedBox(height: 10),
+                  _PeriodSegment(
+                    value: s.billingPeriod,
+                    onChanged: _controller.setBillingPeriod,
+                  ),
+                  const SizedBox(height: 16),
+                  _infoCard([
+                    _InfoRow(
+                      label: 'Sonraki yenileme',
+                      value: _formatDate(s.nextRenewalDate),
+                      onTap: _pickDate,
+                    ),
+                    _InfoRow(
+                      label: 'Kategori',
+                      value: s.category == null
+                          ? 'Otomatik'
+                          : kCategoryLabels[s.category]!,
+                      dotColor: s.category == null
+                          ? null
+                          : categoryColor(s.category!),
+                      onTap: _pickCategory,
+                      last: true,
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                  _notesCard(),
+                  if (s.errorMessage != null) ...[
+                    const SizedBox(height: 14),
+                    _errorBox(s.errorMessage!),
+                  ],
                 ],
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+            ),
+            _footer(s),
+          ],
+        );
+      },
     );
   }
-
-  Widget _grabber() => Container(
-        margin: const EdgeInsets.only(top: 9, bottom: 4),
-        width: 38,
-        height: 5,
-        decoration: BoxDecoration(color: AppTokens.grabber, borderRadius: BorderRadius.circular(999)),
-      );
 
   Widget _header() {
     final name = _controller.state.name;
@@ -221,17 +279,31 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       padding: const EdgeInsets.fromLTRB(8, 2, 8, 10),
       child: Row(
         children: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Geri', style: TextStyle(color: AppTokens.accentFg, fontWeight: FontWeight.w500)),
-          ),
+          if (widget.onBack != null)
+            TextButton(
+              onPressed: widget.onBack,
+              child: const Text(
+                'Geri',
+                style: TextStyle(
+                  color: AppTokens.accentFg,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            )
+          else
+            const SizedBox(width: 48),
           Expanded(
             child: Text(
               title,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTokens.text, letterSpacing: -0.2),
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppTokens.text,
+                letterSpacing: -0.2,
+              ),
             ),
           ),
           _closeButton(),
@@ -241,17 +313,21 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
   }
 
   Widget _closeButton() => Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: Material(
-          color: AppTokens.fill,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => Navigator.of(context).pop(false),
-            child: const SizedBox(width: 32, height: 32, child: Icon(Icons.close, size: 17, color: AppTokens.muted)),
-          ),
+    padding: const EdgeInsets.only(right: 8),
+    child: Material(
+      color: AppTokens.fill,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: widget.onClose,
+        child: const SizedBox(
+          width: 32,
+          height: 32,
+          child: Icon(Icons.close, size: 17, color: AppTokens.muted),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _brandPreview(SubscriptionFormState s) {
     final cat = s.category;
@@ -271,22 +347,46 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       ),
       child: Row(
         children: [
-          BrandAvatar(serviceKey: _previewServiceKey, fallbackName: name, size: 52, circle: true),
+          BrandAvatar(
+            serviceKey: _previewServiceKey,
+            fallbackName: name,
+            size: 52,
+            circle: true,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTokens.text)),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppTokens.text,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    Container(width: 7, height: 7, decoration: BoxDecoration(color: catColor, shape: BoxShape.circle)),
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: catColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Text(catLabel, style: const TextStyle(fontSize: 12.5, color: AppTokens.muted)),
+                    Text(
+                      catLabel,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppTokens.muted,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -314,20 +414,35 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
             ),
             child: Row(
               children: [
-                Text(currencySymbol(s.currency),
-                    style: const TextStyle(fontSize: 20, color: AppTokens.muted, fontWeight: FontWeight.w500)),
+                Text(
+                  currencySymbol(s.currency),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: AppTokens.muted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _amountCtrl,
                     onChanged: _controller.setAmountText,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppTokens.text),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppTokens.text,
+                    ),
                     decoration: const InputDecoration(
                       isCollapsed: true,
                       border: InputBorder.none,
                       hintText: '0,00',
-                      hintStyle: TextStyle(color: AppTokens.tertiary, fontWeight: FontWeight.w600),
+                      hintStyle: TextStyle(
+                        color: AppTokens.tertiary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -363,7 +478,10 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Notlar', style: TextStyle(fontSize: 13, color: AppTokens.tertiary)),
+          const Text(
+            'Notlar',
+            style: TextStyle(fontSize: 13, color: AppTokens.tertiary),
+          ),
           const SizedBox(height: 4),
           TextField(
             controller: _notesCtrl,
@@ -389,13 +507,21 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       decoration: BoxDecoration(
         color: AppTokens.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTokens.red.withValues(alpha: 0.2), width: 0.5),
+        border: Border.all(
+          color: AppTokens.red.withValues(alpha: 0.2),
+          width: 0.5,
+        ),
       ),
       child: Row(
         children: [
           const Icon(Icons.info_outline, size: 16, color: AppTokens.red),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: AppTokens.red, fontSize: 13))),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(color: AppTokens.red, fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
@@ -419,8 +545,22 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
               ),
               child: Center(
                 child: s.isSubmitting
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTokens.onAccent))
-                    : const Text('Kaydet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTokens.onAccent)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTokens.onAccent,
+                        ),
+                      )
+                    : const Text(
+                        'Kaydet',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppTokens.onAccent,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -438,9 +578,17 @@ class _Label extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Text(text, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppTokens.muted, letterSpacing: 0.3)),
-      );
+    padding: const EdgeInsets.only(left: 4),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12.5,
+        fontWeight: FontWeight.w600,
+        color: AppTokens.muted,
+        letterSpacing: 0.3,
+      ),
+    ),
+  );
 }
 
 class _NameField extends StatelessWidget {
@@ -594,19 +742,44 @@ class _InfoRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          border: last ? null : const Border(bottom: BorderSide(color: AppTokens.hair, width: 0.5)),
+          border: last
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: AppTokens.hair, width: 0.5),
+                ),
         ),
         child: Row(
           children: [
-            Text(label, style: const TextStyle(fontSize: 15.5, color: AppTokens.muted)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 15.5, color: AppTokens.muted),
+            ),
             const Spacer(),
             if (dotColor != null) ...[
-              Container(width: 8, height: 8, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
               const SizedBox(width: 7),
             ],
-            Text(value, style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600, color: AppTokens.text)),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w600,
+                color: AppTokens.text,
+              ),
+            ),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 18, color: AppTokens.tertiary),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppTokens.tertiary,
+            ),
           ],
         ),
       ),
@@ -641,11 +814,21 @@ class _CategoryPicker extends StatelessWidget {
               margin: const EdgeInsets.only(top: 9, bottom: 8),
               width: 38,
               height: 5,
-              decoration: BoxDecoration(color: AppTokens.grabber, borderRadius: BorderRadius.circular(999)),
+              decoration: BoxDecoration(
+                color: AppTokens.grabber,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
             const Padding(
               padding: EdgeInsets.only(bottom: 4),
-              child: Text('Kategori', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTokens.text)),
+              child: Text(
+                'Kategori',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppTokens.text,
+                ),
+              ),
             ),
             Flexible(
               child: ListView(
@@ -654,7 +837,12 @@ class _CategoryPicker extends StatelessWidget {
                 children: [
                   _tile(context, const _CategoryChoice(null), 'Otomatik', null),
                   for (final c in SubscriptionCategory.values)
-                    _tile(context, _CategoryChoice(c), kCategoryLabels[c]!, categoryColor(c)),
+                    _tile(
+                      context,
+                      _CategoryChoice(c),
+                      kCategoryLabels[c]!,
+                      categoryColor(c),
+                    ),
                 ],
               ),
             ),
@@ -664,14 +852,25 @@ class _CategoryPicker extends StatelessWidget {
     );
   }
 
-  Widget _tile(BuildContext context, _CategoryChoice choice, String label, Color? color) {
+  Widget _tile(
+    BuildContext context,
+    _CategoryChoice choice,
+    String label,
+    Color? color,
+  ) {
     final isSel = choice.value == selected;
     return ListTile(
       leading: color == null
           ? const Icon(Icons.auto_awesome, size: 18, color: AppTokens.tertiary)
-          : Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          : Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
       title: Text(label, style: const TextStyle(color: AppTokens.text)),
-      trailing: isSel ? const Icon(Icons.check, color: AppTokens.accentFg) : null,
+      trailing: isSel
+          ? const Icon(Icons.check, color: AppTokens.accentFg)
+          : null,
       onTap: () => Navigator.of(context).pop(choice),
     );
   }

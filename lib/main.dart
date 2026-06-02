@@ -7,6 +7,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/app/theme/app_theme.dart';
+import 'package:subsy/core/dev/mock_seed.dart';
 import 'package:subsy/core/exchange/http_exchange_rate_service.dart';
 import 'package:subsy/features/currency/application/currency_providers.dart';
 import 'package:subsy/features/currency/application/exchange_rate_sync.dart';
@@ -53,6 +54,9 @@ Future<void> main() async {
   await container.read(isarDatabaseProvider.future);
   final onboardingDone =
       await container.read(onboardingRepositoryProvider).isCompleted();
+
+  // TEMP: seed demo data while testing (see mock_seed.dart / kSeedMockData).
+  await seedMockSubscriptions(container.read(subscriptionRepositoryProvider));
 
   runApp(
     UncontrolledProviderScope(

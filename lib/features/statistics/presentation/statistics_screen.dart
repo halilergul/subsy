@@ -12,6 +12,7 @@ import 'package:subsy/features/statistics/presentation/widgets/top_subscriptions
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/shared/constants/category_style.dart';
 import 'package:subsy/shared/utils/money_format.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 
 /// Read-only spending statistics: per-currency category breakdown (donut with a
 /// top-category center, legend and stat cards), plus the most expensive
@@ -25,10 +26,8 @@ class StatisticsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTokens.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('İstatistik', style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(context, title: 'İstatistik'),
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _ErrorView(
@@ -37,7 +36,7 @@ class StatisticsScreen extends ConsumerWidget {
         data: (view) {
           if (view.isEmpty) return const _EmptyState();
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: EdgeInsets.fromLTRB(20, glassTopInset(context), 20, 32),
             children: [
               const _PeriodToggle(),
               const SizedBox(height: 18),
