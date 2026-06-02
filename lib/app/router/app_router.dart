@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:subsy/features/notifications/presentation/notification_settings_screen.dart';
+import 'package:subsy/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:subsy/features/statistics/presentation/statistics_screen.dart';
 import 'package:subsy/features/subscription_import/presentation/import_screen.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
@@ -10,6 +11,7 @@ import 'package:subsy/features/subscriptions/presentation/subscription_form_scre
 abstract final class Routes {
   const Routes._();
   static const String dashboard = '/';
+  static const String onboarding = '/onboarding';
   static const String addSubscription = '/subscription/add';
   static const String importSubscription = '/subscription/import';
   static const String editSubscription = '/subscription/edit'; // extra: Subscription
@@ -17,13 +19,19 @@ abstract final class Routes {
   static const String statistics = '/statistics';
 }
 
-/// App router. Feature routes are added as each feature lands.
-final GoRouter appRouter = GoRouter(
-  initialLocation: Routes.dashboard,
+/// Builds the app router. [initialLocation] is resolved once at startup — the
+/// onboarding gate picks `/onboarding` for first-run users and `/` otherwise,
+/// so there is no reactive redirect (and no first-frame flash).
+GoRouter createAppRouter({String initialLocation = Routes.dashboard}) => GoRouter(
+  initialLocation: initialLocation,
   routes: [
     GoRoute(
       path: Routes.dashboard,
       builder: (context, state) => const DashboardScreen(),
+    ),
+    GoRoute(
+      path: Routes.onboarding,
+      builder: (context, state) => const OnboardingScreen(),
     ),
     GoRoute(
       path: Routes.addSubscription,

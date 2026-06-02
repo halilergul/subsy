@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/features/notifications/domain/notification_settings.dart';
 
@@ -113,6 +115,15 @@ class _NotificationSettingsScreenState
                 onTap: () => _pickTime(s),
               ),
             ],
+            const Divider(height: 32),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.slideshow_outlined),
+              title: const Text('Tanıtımı tekrar göster'),
+              subtitle: const Text('Uygulama tanıtımını baştan izle.'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.onboarding),
+            ),
           ],
         ),
       ),

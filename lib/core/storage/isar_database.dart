@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:subsy/features/currency/data/exchange_rates_entity.dart';
 import 'package:subsy/features/currency/data/target_currency_entity.dart';
 import 'package:subsy/features/notifications/data/notification_settings_entity.dart';
+import 'package:subsy/features/onboarding/data/onboarding_state_entity.dart';
 import 'package:subsy/features/subscriptions/data/subscription_entity.dart';
 
 /// Opens and owns the single app-wide Isar instance. All on-device data lives
@@ -18,6 +19,7 @@ class IsarDatabase {
     NotificationSettingsEntitySchema,
     ExchangeRatesEntitySchema,
     TargetCurrencyEntitySchema,
+    OnboardingStateEntitySchema,
   ];
 
   /// Opens the production database in the app documents directory. Reuses an

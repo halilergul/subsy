@@ -16,6 +16,7 @@ import 'package:subsy/features/subscription_import/domain/ocr_service.dart';
 import 'package:subsy/features/subscription_import/domain/ocr_text.dart';
 import 'package:subsy/features/subscription_import/domain/pdf_picker_port.dart';
 import 'package:subsy/features/notifications/domain/notification_scheduler.dart';
+import 'package:subsy/features/onboarding/domain/onboarding_repository.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/notifications/domain/planned_reminder.dart';
 import 'package:subsy/features/subscriptions/domain/premium_status.dart';
@@ -70,6 +71,23 @@ class FakePremium implements PremiumStatus {
   FakePremium(this.isPremium);
   @override
   bool isPremium;
+}
+
+/// In-memory onboarding flag; counts completion calls for assertions.
+class FakeOnboardingRepository implements OnboardingRepository {
+  FakeOnboardingRepository({this.completed = false});
+
+  bool completed;
+  int markCount = 0;
+
+  @override
+  Future<bool> isCompleted() async => completed;
+
+  @override
+  Future<void> markCompleted() async {
+    completed = true;
+    markCount++;
+  }
 }
 
 /// Records scheduling calls for notification tests; never touches the OS.
