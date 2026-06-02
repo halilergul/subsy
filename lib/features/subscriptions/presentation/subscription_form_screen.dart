@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:subsy/app/router/app_router.dart';
 import 'package:subsy/features/currency/presentation/widgets/converted_amount_preview.dart';
 import 'package:subsy/features/subscriptions/application/subscription_form_controller.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
@@ -74,6 +76,13 @@ class _SubscriptionFormScreenState extends ConsumerState<SubscriptionFormScreen>
     super.dispose();
   }
 
+  /// Opens the OCR import flow. If it saved at least one subscription, close
+  /// this (empty) add form too so the user returns to the dashboard.
+  Future<void> _scanFromDocument() async {
+    final saved = await context.push<bool>(Routes.importSubscription);
+    if (saved == true && mounted) context.pop();
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -124,6 +133,34 @@ class _SubscriptionFormScreenState extends ConsumerState<SubscriptionFormScreen>
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
+              if (!_controller.isEditing) ...[
+                OutlinedButton.icon(
+                  onPressed: _scanFromDocument,
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  label: const Text('Dokümandan tara'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Makbuz, ekran görüntüsü veya App Store aboneliklerinden otomatik ekle',
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('veya elle doldur',
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
               BrandPreview(name: s.name),
               const SizedBox(height: 16),
               TextField(

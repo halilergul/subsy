@@ -16,6 +16,8 @@ import 'package:subsy/features/home_widget/data/plugin_home_widget_service.dart'
 import 'package:subsy/features/home_widget/domain/widget_keys.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/features/notifications/data/local_notification_service.dart';
+import 'package:subsy/features/subscription_import/application/subscription_import_providers.dart';
+import 'package:subsy/features/subscription_import/data/mlkit_ocr_service.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -41,6 +43,7 @@ Future<void> main() async {
         exchangeRateServiceProvider
             .overrideWithValue(HttpExchangeRateService(http.Client())),
         homeWidgetServiceProvider.overrideWithValue(const PluginHomeWidgetService()),
+        ocrServiceProvider.overrideWithValue(const MlkitOcrService()),
       ],
       child: const SubsyApp(),
     ),

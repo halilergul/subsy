@@ -22,6 +22,11 @@ class BrandResolver {
     return null;
   }
 
+  /// Public, reusable normalization (FR-012). [BrandTextMatcher] uses this so
+  /// in-text brand scanning and exact form-name matching share one source of
+  /// truth (research.md D4).
+  static String normalize(String input) => _normalize(input);
+
   /// Folds Turkish characters to ASCII, lowercases, and collapses whitespace
   /// so "İcloud", "BLUTV", "Exxen" all normalize predictably. Dart's default
   /// `toLowerCase()` mishandles the Turkish dotted/dotless I, hence the

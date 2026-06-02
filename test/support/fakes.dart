@@ -7,8 +7,14 @@ import 'package:subsy/features/currency/domain/currency_constants.dart';
 import 'package:subsy/features/currency/domain/exchange_rates.dart';
 import 'package:subsy/features/currency/domain/exchange_rates_repository.dart';
 import 'package:subsy/features/currency/domain/target_currency_repository.dart';
+import 'dart:typed_data';
+
 import 'package:subsy/features/home_widget/domain/home_widget_service.dart';
 import 'package:subsy/features/home_widget/domain/widget_payload.dart';
+import 'package:subsy/features/subscription_import/domain/image_picker_port.dart';
+import 'package:subsy/features/subscription_import/domain/ocr_service.dart';
+import 'package:subsy/features/subscription_import/domain/ocr_text.dart';
+import 'package:subsy/features/subscription_import/domain/pdf_picker_port.dart';
 import 'package:subsy/features/notifications/domain/notification_scheduler.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/notifications/domain/planned_reminder.dart';
@@ -160,5 +166,60 @@ class FakeHomeWidgetService implements HomeWidgetService {
   @override
   Future<void> clear() async {
     lastPayload = const WidgetPayload.empty();
+  }
+}
+
+/// On-device OCR fake: returns canned [OcrText] (or throws) without a device.
+/// Records call count so gating tests can assert "no OCR ran" (SC-008).
+class FakeOcrService implements OcrService {
+  FakeOcrService({this.canned = OcrText.empty, this.throwError = false});
+
+  OcrText canned;
+  bool throwError;
+  int recognizeImageCount = 0;
+  int recognizePdfCount = 0;
+
+  @override
+  Future<OcrText> recognizeImage(Uint8List bytes) async {
+    recognizeImageCount++;
+    if (throwError) throw Exception('ocr failure');
+    return canned;
+  }
+
+  @override
+  Future<OcrText> recognizePdf(Uint8List bytes) async {
+    recognizePdfCount++;
+    if (throwError) throw Exception('ocr failure');
+    return canned;
+  }
+}
+
+/// Image-picker fake: returns canned bytes, null (cancel), or throws (denied).
+class FakeImagePickerPort implements ImagePickerPort {
+  FakeImagePickerPort({this.bytes, this.throwError = false});
+
+  Uint8List? bytes;
+  bool throwError;
+  int pickCount = 0;
+
+  @override
+  Future<Uint8List?> pick(ImportImageSource source) async {
+    pickCount++;
+    if (throwError) throw Exception('permission denied');
+    return bytes;
+  }
+}
+
+/// PDF-picker fake (US4): returns canned bytes or null (cancel).
+class FakePdfPickerPort implements PdfPickerPort {
+  FakePdfPickerPort({this.bytes});
+
+  Uint8List? bytes;
+  int pickCount = 0;
+
+  @override
+  Future<Uint8List?> pickPdf() async {
+    pickCount++;
+    return bytes;
   }
 }

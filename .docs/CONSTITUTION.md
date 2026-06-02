@@ -101,7 +101,8 @@ Spotify, Netflix, YouTube Premium, Apple TV+, iCloud+, ChatGPT Plus, Claude Pro,
 - ❌ Backend / sunucu / kullanıcı hesabı / login
 - ❌ Cloud sync / cihazlar arası senkronizasyon
 - ❌ Multi-tenant / paylaşım / sosyal özellik
-- ❌ Banka entegrasyonu / otomatik abonelik tespiti
+- ❌ Banka entegrasyonu (sunucu/Open Banking gerektiren)
+- ⚠️ ~~Otomatik abonelik tespiti~~ → **2026-06-02 kullanıcı onayıyla kapsama alındı** (feature `009-subscription-import`, premium). YALNIZCA cihaz-üstü/offline yöntemle: makbuz/ekran görüntüsü/App Store SS'inden on-device OCR + saf Dart ayrıştırıcı. Backend/banka entegrasyonu YOK — ilkeler korunur.
 - ❌ Web sürümü (sadece iOS + Android)
 
 ## Görsel kimlik
@@ -128,6 +129,8 @@ Spotify, Netflix, YouTube Premium, Apple TV+, iCloud+, ChatGPT Plus, Claude Pro,
 | 2026-06-01 | Akış: **tam spec-kit** (specify→plan→tasks→implement) | Kullanıcı tercihi |
 | 2026-06-01 | Logo: **bundled SVG marka logosu** katalog + online fallback (cache) | Gerçek marka logosu = premium his; bundle ile offline garanti |
 | 2026-06-01 | Döviz API: **frankfurter.app** (key'siz, ECB, TRY) | Ücretsiz, kayıt gerektirmez |
+| 2026-06-02 | **Otomatik abonelik tanıma** (OCR import) anti-goal'den çıkarıldı, premium feature olarak eklendi | Kullanıcı talebi (subsday-seviyesi rekabet). Cihaz-üstü ML Kit OCR + saf Dart parser; offline/sıfır-backend/ücretsiz korunur, banka entegrasyonu yok |
+| 2026-06-02 | OCR motoru: **google_mlkit_text_recognition** (`OcrService` arayüzü arkasında) | Tek test edilebilir Dart yolu; first-party on-device model; native Vision bu ortamda doğrulanamadığı için ertelendi. iOS min 13→16 trade-off'u kabul edildi |
 
 ## Kısıtlar ve özel durumlar
 - Isar orijinal repo bakımı yavaşladı → community/v4 sürümü kullanılır; tüm erişim `SubscriptionRepository` arayüzü arkasından yapılır (gerekirse Drift/Hive'a geçilebilir)

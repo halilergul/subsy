@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aboneliklerini ekran görüntüsünden otomatik tanımak için galeriden görsel seçmene izin verir. Görseller cihazından çıkmaz.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Makbuz fotoğrafından aboneliğini otomatik tanımak için kameraya erişir. Fotoğraflar cihazından çıkmaz.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

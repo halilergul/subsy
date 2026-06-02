@@ -96,3 +96,14 @@ Agent'lar bu dosyayı şu durumlarda günceller:
 - **Konu:** Mobil / Tooling
 - **Detay:** `Provider<void>` içinde `ref.listen` + stream emisyonu, bare `ProviderContainer` testinde zamanlama nedeniyle güvenilir tetiklenmiyor (publish hiç çalışmadı). reminder_sync deseni de bunu yapmaz.
 - **Çözüm/Önlem:** Orkestrasyon mantığını top-level saf bir fonksiyona çıkar (`publishWidget(service, {...})`) ve onu doğrudan fake ile test et; provider yalnızca ince bir `ref.listen` sarmalayıcı olsun (reminder_sync'in `rescheduleAll`'ı gibi).
+
+### OCR import (009): ML Kit iOS 16 tabanı, parser determinizmi, OcrService swap
+- **Tarih:** 2026-06-02
+- **Konu:** Mobil / OCR import
+- **Detay:**
+  - `google_mlkit_text_recognition` iOS 16 ister → `ios/Podfile` + `project.pbxproj` (3× `IPHONEOS_DEPLOYMENT_TARGET`) 13.0'dan 16.0'a çıkarıldı. iPhone 7 ve öncesi (2016-) düşer; premium feature olduğu için pratik kayıp ~yok ama **tüm uygulamanın** tabanı yükselir. ML Kit pod'u koşullu yapılamaz (hep-ya-hiç).
+  - `syncfusion_flutter_pdf` eski sürümleri `intl <0.20` pinler → projedeki `intl ^0.20.2` ile çakışır. `^33.2.8` (güncel major) ile çözülür.
+  - **Tüm tanıma mantığı saf Dart** (`SubscriptionParser` + amount/date/brand/duplicate helper'ları); `OcrService` tek impure dikiş. Parser'a `now` enjekte edilir (`DateTime.now()` içeride yok) → deterministik fixture testleri.
+  - **`OcrService` arayüzü** sayesinde iOS'u native Apple Vision'a (iOS 13, sıfır boyut) çevirmek lokal bir değişiklik — kullanıcı düşüşü sorun olursa buradan dönülür.
+  - **Cihaz doğrulaması ertelendi:** ML Kit native render, foto/kamera izinleri ve **taranmış PDF rasterizasyonu** bu ortamda derlenemez. Metin-tabanlı PDF (syncfusion, saf Dart) çalışır ve test edilir; taranmış PDF → boş metin → "tanınamadı" durumu (rasterizasyon fallback cihazda eklenecek).
+  - **App Store/Play okunamaz** (platform kısıtı): sistem abonelik ekranının ekran görüntüsü OCR ile okunur; ayrı bir teknoloji değil, görsel import akışına katlanır.

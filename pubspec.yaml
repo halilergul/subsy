@@ -51,6 +51,12 @@ dependencies:
     sdk: flutter
   flutter_timezone: ^5.1.0
   fl_chart: ^1.2.0
+  # Subscription import (009): on-device OCR + media picking (offline, free).
+  google_mlkit_text_recognition: ^0.15.0
+  image_picker: ^1.1.2
+  # US4 — PDF receipts: pick a file + pure-Dart text extraction (offline, free).
+  file_picker: ^8.1.4
+  syncfusion_flutter_pdf: ^33.2.8
 
 dev_dependencies:
   flutter_test:
