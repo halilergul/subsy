@@ -206,4 +206,72 @@ void main() {
     const d = RecognizedDraft(name: 'X');
     expect(d.isComplete, isFalse);
   });
+
+  group('US2 — selection model', () {
+    final t = DateTime(2026, 1, 1);
+    Subscription netflixSub() => Subscription(
+          id: 1,
+          name: 'Netflix',
+          serviceKey: 'netflix',
+          amount: 149.99,
+          currency: Currency.tryl,
+          billingPeriod: BillingPeriod.monthly,
+          nextRenewalDate: now,
+          category: SubscriptionCategory.streaming,
+          createdAt: t,
+          updatedAt: t,
+        );
+
+    void useTwoDrafts() {
+      ocr = FakeOcrService(
+        canned: const OcrText(lines: [
+          'Netflix ₺149,99 Aylık 12.06.2026',
+          'Spotify ₺59,99 Aylık 15.06.2026',
+        ]),
+      );
+    }
+
+    test('possible duplicates start unchecked, others checked', () async {
+      useTwoDrafts();
+      repo.items.add(netflixSub()); // makes the Netflix draft a duplicate
+      final c = build();
+      await c.recognize(bytes);
+
+      expect(c.state.status, ImportStatus.review);
+      expect(c.state.drafts, hasLength(2));
+      final netflix = c.state.drafts.indexWhere((d) => d.serviceKey == 'netflix');
+      final spotify = c.state.drafts.indexWhere((d) => d.serviceKey == 'spotify');
+      expect(c.state.selected[netflix], isFalse); // duplicate pre-unchecked
+      expect(c.state.selected[spotify], isTrue);
+      expect(c.state.selectedCount, 1);
+    });
+
+    test('confirmSelected saves only the checked drafts', () async {
+      useTwoDrafts();
+      repo.items.add(netflixSub());
+      final c = build();
+      await c.recognize(bytes);
+
+      await c.confirmSelected(); // only Spotify is checked
+      expect(c.state.status, ImportStatus.done);
+      expect(c.state.savedCount, 1);
+      expect(repo.items.any((s) => s.serviceKey == 'spotify'), isTrue);
+      expect(repo.items.where((s) => s.serviceKey == 'netflix'), hasLength(1)); // not re-added
+    });
+
+    test('toggleAll then toggle one saves exactly that draft', () async {
+      useTwoDrafts();
+      final c = build(); // no pre-existing duplicate → both checked
+      await c.recognize(bytes);
+      expect(c.state.selectedCount, 2);
+
+      c.setAllSelected(false);
+      expect(c.state.selectedCount, 0);
+      c.toggleSelected(0);
+      expect(c.state.selectedCount, 1);
+
+      await c.confirmSelected();
+      expect(c.state.savedCount, 1);
+    });
+  });
 }

@@ -23,6 +23,7 @@ class ImportState {
     this.status = ImportStatus.idle,
     this.drafts = const [],
     this.draftErrors = const [],
+    this.selected = const [],
     this.errorMessage,
     this.savedCount = 0,
   });
@@ -32,13 +33,23 @@ class ImportState {
 
   /// Per-draft error message (parallel to [drafts]); null when valid.
   final List<String?> draftErrors;
+
+  /// Per-draft selection (parallel to [drafts]); duplicates start unchecked.
+  final List<bool> selected;
   final String? errorMessage;
   final int savedCount;
+
+  /// Number of drafts currently checked for saving.
+  int get selectedCount => selected.where((e) => e).length;
+
+  /// Whether every draft is checked.
+  bool get allSelected => drafts.isNotEmpty && selected.every((e) => e);
 
   ImportState copyWith({
     ImportStatus? status,
     List<RecognizedDraft>? drafts,
     List<String?>? draftErrors,
+    List<bool>? selected,
     String? errorMessage,
     bool clearError = false,
     int? savedCount,
@@ -47,6 +58,7 @@ class ImportState {
       status: status ?? this.status,
       drafts: drafts ?? this.drafts,
       draftErrors: draftErrors ?? this.draftErrors,
+      selected: selected ?? this.selected,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       savedCount: savedCount ?? this.savedCount,
     );
@@ -186,7 +198,21 @@ class ImportController extends ChangeNotifier {
       status: ImportStatus.review,
       drafts: flagged,
       draftErrors: List<String?>.filled(flagged.length, null),
+      // Possible duplicates start unchecked so they aren't saved by accident.
+      selected: [for (final d in flagged) d.duplicateOf == null],
     ));
+  }
+
+  /// Toggle one draft's checkbox.
+  void toggleSelected(int index) {
+    if (index < 0 || index >= _state.selected.length) return;
+    final selected = List<bool>.of(_state.selected)..[index] = !_state.selected[index];
+    _set(_state.copyWith(selected: selected));
+  }
+
+  /// Check or uncheck every draft.
+  void setAllSelected(bool value) {
+    _set(_state.copyWith(selected: List<bool>.filled(_state.drafts.length, value)));
   }
 
   void editDraft(int index, RecognizedDraft updated) {
@@ -200,10 +226,52 @@ class ImportController extends ChangeNotifier {
     if (index < 0 || index >= _state.drafts.length) return;
     final drafts = List<RecognizedDraft>.of(_state.drafts)..removeAt(index);
     final errors = List<String?>.of(_state.draftErrors)..removeAt(index);
+    final selected = List<bool>.of(_state.selected)..removeAt(index);
     if (drafts.isEmpty) {
       _set(const ImportState(status: ImportStatus.idle));
     } else {
-      _set(_state.copyWith(drafts: drafts, draftErrors: errors));
+      _set(_state.copyWith(drafts: drafts, draftErrors: errors, selected: selected));
+    }
+  }
+
+  /// Saves only the checked drafts through `AddSubscription`. Unchecked drafts
+  /// are dropped. On full success → done; if a checked draft is invalid or its
+  /// save fails, only those stay in review with a Turkish message for a retry.
+  Future<void> confirmSelected() async {
+    _set(_state.copyWith(status: ImportStatus.saving, clearError: true));
+    final keptDrafts = <RecognizedDraft>[];
+    final keptErrors = <String?>[];
+    var saved = 0;
+
+    for (var i = 0; i < _state.drafts.length; i++) {
+      final isSelected = i < _state.selected.length && _state.selected[i];
+      if (!isSelected) continue;
+      final draft = _state.drafts[i];
+      if (!draft.isComplete) {
+        keptDrafts.add(draft);
+        keptErrors.add('Eksik alanları doldurun (tutar, para birimi, tarih).');
+        continue;
+      }
+      final result = await _add(_toDraft(draft));
+      switch (result) {
+        case Success<Subscription>():
+          saved++;
+        case Failure<Subscription>(:final error):
+          keptDrafts.add(draft);
+          keptErrors.add(error.message);
+      }
+    }
+
+    if (keptDrafts.isEmpty) {
+      _set(ImportState(status: ImportStatus.done, savedCount: saved));
+    } else {
+      _set(ImportState(
+        status: ImportStatus.review,
+        drafts: keptDrafts,
+        draftErrors: keptErrors,
+        selected: List<bool>.filled(keptDrafts.length, true),
+        savedCount: saved,
+      ));
     }
   }
 
