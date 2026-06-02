@@ -83,7 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void _onAdd(BuildContext context) => showAddSheet(context);
 
   void _onOpenSub(BuildContext context, UpcomingPayment payment) =>
-      context.push(Routes.editSubscription, extra: payment.subscription);
+      context.push(Routes.subscriptionDetail, extra: payment.subscription);
 
   void _onUpgrade(BuildContext context) {
     // RevenueCat paywall ships last; honest placeholder until then.

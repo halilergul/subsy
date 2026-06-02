@@ -5,6 +5,7 @@ import 'package:subsy/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:subsy/features/statistics/presentation/statistics_screen.dart';
 import 'package:subsy/features/subscription_import/presentation/import_screen.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
+import 'package:subsy/features/subscriptions/presentation/subscription_detail_screen.dart';
 import 'package:subsy/features/subscriptions/presentation/subscription_form_screen.dart';
 
 /// Route name constants — no magic strings (see CONSTITUTION.md).
@@ -14,6 +15,7 @@ abstract final class Routes {
   static const String onboarding = '/onboarding';
   static const String addSubscription = '/subscription/add';
   static const String importSubscription = '/subscription/import';
+  static const String subscriptionDetail = '/subscription/detail'; // extra: Subscription
   static const String editSubscription = '/subscription/edit'; // extra: Subscription
   static const String notificationSettings = '/settings/notifications';
   static const String statistics = '/statistics';
@@ -40,6 +42,11 @@ GoRouter createAppRouter({String initialLocation = Routes.dashboard}) => GoRoute
     GoRoute(
       path: Routes.importSubscription,
       builder: (context, state) => const ImportScreen(),
+    ),
+    GoRoute(
+      path: Routes.subscriptionDetail,
+      builder: (context, state) =>
+          SubscriptionDetailScreen(subscription: state.extra as Subscription),
     ),
     GoRoute(
       path: Routes.editSubscription,

@@ -6,6 +6,7 @@ import 'package:subsy/features/subscriptions/application/subscription_form_contr
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/brand_catalog_entry.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
+import 'package:subsy/features/subscriptions/domain/subscription.dart';
 import 'package:subsy/shared/utils/money_format.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
 import 'package:subsy/shared/constants/category_style.dart';
@@ -27,28 +28,30 @@ const Map<SubscriptionCategory, String> kCategoryLabels = {
   SubscriptionCategory.other: 'Diğer',
 };
 
-/// Opens the add-subscription detail form as a keyboard-aware bottom sheet.
-/// Returns true when a subscription was saved. [entry] is the picked brand
-/// (null = custom/manual); [initialName] seeds a custom entry's name.
+/// Opens the subscription detail form as a keyboard-aware bottom sheet.
+/// Returns true when saved. For ADD: pass [entry] (picked brand; null = custom)
+/// and optionally [initialName]. For EDIT: pass [editing].
 Future<bool?> showAddFormSheet(
   BuildContext context, {
   BrandCatalogEntry? entry,
   String? initialName,
+  Subscription? editing,
 }) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: AppTokens.scrim,
-    builder: (_) => _AddFormSheet(entry: entry, initialName: initialName),
+    builder: (_) => _AddFormSheet(entry: entry, initialName: initialName, editing: editing),
   );
 }
 
 class _AddFormSheet extends ConsumerStatefulWidget {
-  const _AddFormSheet({this.entry, this.initialName});
+  const _AddFormSheet({this.entry, this.initialName, this.editing});
 
   final BrandCatalogEntry? entry;
   final String? initialName;
+  final Subscription? editing;
 
   @override
   ConsumerState<_AddFormSheet> createState() => _AddFormSheetState();
@@ -60,7 +63,11 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _notesCtrl;
 
-  bool get _isCustom => widget.entry == null;
+  /// Show an editable name field for custom-add and all edits; hide it for a
+  /// picked brand (the name is fixed by the brand preview header).
+  bool get _showNameField => widget.editing != null || widget.entry == null;
+
+  String? get _previewServiceKey => widget.editing?.serviceKey ?? widget.entry?.serviceKey;
 
   @override
   void initState() {
@@ -70,12 +77,13 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       update: ref.read(updateSubscriptionProvider),
       delete: ref.read(deleteSubscriptionProvider),
       now: DateTime.now(),
+      editing: widget.editing,
     );
     final entry = widget.entry;
-    if (entry != null) {
+    if (widget.editing == null && entry != null) {
       _controller.setName(entry.displayName);
       _controller.setCategory(entry.defaultCategory);
-    } else if ((widget.initialName ?? '').isNotEmpty) {
+    } else if (widget.editing == null && (widget.initialName ?? '').isNotEmpty) {
       _controller.setName(widget.initialName!);
     }
     final s = _controller.state;
@@ -148,8 +156,8 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
                       shrinkWrap: true,
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                       children: [
-                        _brandPreview(),
-                        if (_isCustom) ...[
+                        _brandPreview(s),
+                        if (_showNameField) ...[
                           const SizedBox(height: 16),
                           _NameField(controller: _nameCtrl, onChanged: _controller.setName),
                         ],
@@ -207,7 +215,8 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       );
 
   Widget _header() {
-    final title = widget.entry?.displayName ?? 'Yeni abonelik';
+    final name = _controller.state.name;
+    final title = name.isEmpty ? 'Yeni abonelik' : name;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 2, 8, 10),
       child: Row(
@@ -244,11 +253,11 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
         ),
       );
 
-  Widget _brandPreview() {
-    final entry = widget.entry;
-    final catColor = entry != null ? categoryColor(entry.defaultCategory) : AppTokens.tertiary;
-    final name = entry?.displayName ?? (_nameCtrl.text.isEmpty ? 'Yeni abonelik' : _nameCtrl.text);
-    final catLabel = entry != null ? kCategoryLabels[entry.defaultCategory]! : 'Diğer';
+  Widget _brandPreview(SubscriptionFormState s) {
+    final cat = s.category;
+    final catColor = cat != null ? categoryColor(cat) : AppTokens.tertiary;
+    final name = s.name.isEmpty ? 'Yeni abonelik' : s.name;
+    final catLabel = cat != null ? kCategoryLabels[cat]! : 'Diğer';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -262,7 +271,7 @@ class _AddFormSheetState extends ConsumerState<_AddFormSheet> {
       ),
       child: Row(
         children: [
-          BrandAvatar(serviceKey: entry?.serviceKey, fallbackName: name, size: 52, circle: true),
+          BrandAvatar(serviceKey: _previewServiceKey, fallbackName: name, size: 52, circle: true),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
