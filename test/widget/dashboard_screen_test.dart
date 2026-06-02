@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
-import 'package:subsy/features/dashboard/presentation/widgets/payment_list_item.dart';
+import 'package:subsy/features/dashboard/presentation/widgets/dashboard_fab.dart';
+import 'package:subsy/features/dashboard/presentation/widgets/sub_row.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
@@ -40,7 +41,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final names = tester
-        .widgetList<PaymentListItem>(find.byType(PaymentListItem))
+        .widgetList<SubRow>(find.byType(SubRow))
         .map((w) => w.payment.subscription.name)
         .toList();
     expect(names, ['Soon', 'Late']);
@@ -49,6 +50,6 @@ void main() {
   testWidgets('shows a FAB when there are subscriptions', (tester) async {
     await tester.pumpWidget(harness([sub('Netflix', 3)]));
     await tester.pumpAndSettle();
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(DashboardFab), findsOneWidget);
   });
 }

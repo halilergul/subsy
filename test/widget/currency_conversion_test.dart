@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subsy/features/currency/application/currency_providers.dart';
 import 'package:subsy/features/currency/domain/exchange_rates.dart';
-import 'package:subsy/features/currency/presentation/widgets/conversion_locked_teaser.dart';
 import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
@@ -63,28 +62,34 @@ void main() {
   testWidgets('premium + rates → unified ≈ total shown beside per-currency (SC-001)',
       (tester) async {
     await pumpDashboard(tester, premium: true, rateData: rates);
-    expect(find.textContaining('Toplam ≈'), findsOneWidget);
-    expect(find.textContaining('₺'), findsWidgets); // per-currency rows intact
-    expect(find.byType(ConversionLockedTeaser), findsNothing);
+    // Hero shows the converted unified total (100 TRY + 10 USD ≈ ₺509,09)
+    // with the premium FX-freshness caption; per-currency chips stay intact.
+    expect(find.textContaining('509'), findsOneWidget);
+    expect(find.textContaining('Kurlar:'), findsOneWidget);
+    expect(find.textContaining('₺'), findsWidgets); // per-currency chips intact
+    expect(find.text('Tek para biriminde toplam'), findsNothing); // no upsell
   });
 
   testWidgets('target currency re-expresses the unified total (SC-004)', (tester) async {
     await pumpDashboard(tester, premium: true, rateData: rates, target: Currency.usd);
-    // Unified total now in USD.
-    expect(find.textContaining('Toplam ≈ \$'), findsOneWidget);
+    // Unified total re-expressed in USD (100 TRY + 10 USD ≈ $12,44).
+    expect(find.textContaining('12,44'), findsOneWidget);
   });
 
-  testWidgets('free user → locked teaser, never a real number (SC-005)', (tester) async {
+  testWidgets('free user → locked teaser, never a real converted number (SC-005)',
+      (tester) async {
     await pumpDashboard(tester, premium: false, rateData: rates);
-    expect(find.byType(ConversionLockedTeaser), findsOneWidget);
-    expect(find.textContaining('Toplam ≈'), findsNothing);
+    // Free multi-currency: per-currency chips (real, un-converted) + upsell;
+    // the converted unified total and its FX caption are gated away.
+    expect(find.text('Tek para biriminde toplam'), findsOneWidget);
+    expect(find.textContaining('Kurlar:'), findsNothing);
   });
 
   testWidgets('premium + no rates → honest unavailable, per-currency intact (SC-006)',
       (tester) async {
     await pumpDashboard(tester, premium: true, rateData: null);
     expect(find.textContaining('kurlar henüz alınamadı'), findsOneWidget);
-    expect(find.textContaining('Toplam ≈'), findsNothing);
+    expect(find.textContaining('Kurlar:'), findsNothing); // no freshness/total
     expect(find.textContaining('₺'), findsWidgets); // per-currency unaffected
   });
 

@@ -13,18 +13,23 @@ class BrandAvatar extends StatelessWidget {
     required this.serviceKey,
     required this.fallbackName,
     this.size = 48,
+    this.circle = false,
   });
 
   final String? serviceKey;
   final String fallbackName;
   final double size;
 
+  /// When true the tile is a full circle (dashboard/calendar style); otherwise
+  /// a rounded square (forms/preview). Logos render circular per the design.
+  final bool circle;
+
   static const Color _fallbackColor = Color(0xFF2A2A33);
 
   @override
   Widget build(BuildContext context) {
     final BrandCatalogEntry? entry = brandByKey(serviceKey);
-    final radius = size * 0.28;
+    final radius = circle ? size / 2 : size * 0.28;
 
     if (entry != null) {
       return Container(

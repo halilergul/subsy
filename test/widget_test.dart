@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:subsy/features/notifications/application/notification_providers.dart';
 import 'package:subsy/main.dart';
 
@@ -18,6 +19,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Subsy'), findsOneWidget);
+    expect(find.byType(DashboardScreen), findsOneWidget);
   });
 }
