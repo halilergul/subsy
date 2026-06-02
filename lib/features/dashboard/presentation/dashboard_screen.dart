@@ -174,9 +174,9 @@ class _TopBar extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               _IconBtn(
-                icon: Icons.notifications_none_rounded,
-                tooltip: 'Bildirimler',
-                onTap: () => context.push(Routes.notificationSettings),
+                icon: Icons.settings_outlined,
+                tooltip: 'Ayarlar',
+                onTap: () => context.push(Routes.settings),
               ),
             ],
           ),

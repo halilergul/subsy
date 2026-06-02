@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subsy/features/statistics/presentation/statistics_screen.dart';
 import 'package:subsy/features/statistics/presentation/widgets/category_donut.dart';
-import 'package:subsy/features/statistics/presentation/widgets/category_legend.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
@@ -46,7 +45,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CategoryDonut), findsOneWidget);
-    expect(find.byType(CategoryLegend), findsOneWidget);
+    // Inline legend rows render the category labels.
+    expect(find.text('Yayın'), findsWidgets); // streaming (legend + donut center)
+    expect(find.text('Müzik'), findsOneWidget); // music (legend)
     expect(find.text('Görüntülenecek veri yok'), findsNothing);
   });
 }

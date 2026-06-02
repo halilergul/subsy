@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:subsy/features/notifications/presentation/notification_settings_screen.dart';
 import 'package:subsy/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:subsy/features/settings/presentation/settings_screen.dart';
 import 'package:subsy/features/statistics/presentation/statistics_screen.dart';
 import 'package:subsy/features/subscription_import/presentation/import_screen.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
@@ -17,6 +18,7 @@ abstract final class Routes {
   static const String importSubscription = '/subscription/import';
   static const String subscriptionDetail = '/subscription/detail'; // extra: Subscription
   static const String editSubscription = '/subscription/edit'; // extra: Subscription
+  static const String settings = '/settings';
   static const String notificationSettings = '/settings/notifications';
   static const String statistics = '/statistics';
 }
@@ -52,6 +54,10 @@ GoRouter createAppRouter({String initialLocation = Routes.dashboard}) => GoRoute
       path: Routes.editSubscription,
       builder: (context, state) =>
           SubscriptionFormScreen(subscription: state.extra as Subscription?),
+    ),
+    GoRoute(
+      path: Routes.settings,
+      builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: Routes.notificationSettings,
