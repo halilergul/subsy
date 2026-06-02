@@ -136,7 +136,6 @@ class _CrossPlatformSheet extends StatelessWidget {
       height: 52,
       child: Material(
         color: background,
-        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),

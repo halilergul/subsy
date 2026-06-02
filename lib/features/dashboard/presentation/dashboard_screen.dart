@@ -14,6 +14,7 @@ import 'package:subsy/features/dashboard/presentation/widgets/dashboard_fab.dart
 import 'package:subsy/features/dashboard/presentation/widgets/summary_panel.dart';
 import 'package:subsy/features/dashboard/presentation/widgets/sub_row.dart';
 import 'package:subsy/features/dashboard/presentation/widgets/view_toggle.dart';
+import 'package:subsy/features/subscriptions/presentation/widgets/add_sheet.dart';
 
 /// Home screen: a persistent hero summary panel above a List ⇄ Calendar toggle.
 /// The total card stays visible in both modes; only the content below it swaps.
@@ -79,7 +80,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  void _onAdd(BuildContext context) => context.push(Routes.addSubscription);
+  void _onAdd(BuildContext context) => showAddSheet(context);
 
   void _onOpenSub(BuildContext context, UpcomingPayment payment) =>
       context.push(Routes.editSubscription, extra: payment.subscription);
