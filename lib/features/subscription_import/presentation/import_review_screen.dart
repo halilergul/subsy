@@ -6,6 +6,7 @@ import 'package:subsy/features/subscription_import/presentation/widgets/import_d
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/shared/utils/money_format.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
+import 'package:subsy/shared/widgets/glass/glass_surface.dart';
 
 /// Hybrid review (US2): a selectable list of recognized drafts. Each row has a
 /// checkbox (possible duplicates start unchecked) and expands on tap into the
@@ -56,7 +57,9 @@ class _ImportReviewViewState extends State<ImportReviewView> {
             itemCount: count,
             itemBuilder: (context, index) {
               final selected = index < s.selected.length && s.selected[index];
-              final error = index < s.draftErrors.length ? s.draftErrors[index] : null;
+              final error = index < s.draftErrors.length
+                  ? s.draftErrors[index]
+                  : null;
               if (_expanded.contains(index)) {
                 return ImportDraftCard(
                   key: ValueKey('draft_$index'),
@@ -93,14 +96,24 @@ class _ImportReviewViewState extends State<ImportReviewView> {
           Expanded(
             child: Text(
               '$count abonelik bulundu',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTokens.text),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTokens.text,
+              ),
             ),
           ),
           TextButton(
-            onPressed: count == 0 ? null : () => widget.onToggleAll(!allSelected),
+            onPressed: count == 0
+                ? null
+                : () => widget.onToggleAll(!allSelected),
             child: Text(
               allSelected ? 'Hiçbiri' : 'Tümünü seç',
-              style: const TextStyle(color: AppTokens.accentFg, fontWeight: FontWeight.w600, fontSize: 13.5),
+              style: const TextStyle(
+                color: AppTokens.accentFg,
+                fontWeight: FontWeight.w600,
+                fontSize: 13.5,
+              ),
             ),
           ),
         ],
@@ -119,22 +132,31 @@ class _ImportReviewViewState extends State<ImportReviewView> {
           color: Colors.transparent,
           child: InkWell(
             onTap: enabled ? widget.onConfirm : null,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(999),
             child: Ink(
               decoration: BoxDecoration(
                 gradient: enabled ? AppTokens.accentGradient : null,
-                color: enabled ? null : AppTokens.surface2,
-                borderRadius: BorderRadius.circular(16),
+                color: enabled ? null : AppTokens.fill,
+                borderRadius: BorderRadius.circular(999),
               ),
               child: Center(
                 child: saving
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTokens.onAccent))
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTokens.onAccent,
+                        ),
+                      )
                     : Text(
-                        'Seçilenleri kaydet ($selectedCount)',
+                        'Seçilenleri Kaydet ($selectedCount)',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: enabled ? AppTokens.onAccent : AppTokens.tertiary,
+                          color: enabled
+                              ? AppTokens.onAccent
+                              : AppTokens.tertiary,
                         ),
                       ),
               ),
@@ -173,14 +195,12 @@ class _ResultRow extends StatelessWidget {
         : '${formatMoneyTr(amount, draft.currency!)} · $periodLabel';
     final needsCheck = !draft.isComplete;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppTokens.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTokens.hair, width: 0.5),
-      ),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GlassSurface(
+        radius: 16,
+        fill: GlassFill.soft,
+        child: Row(
         children: [
           GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -193,13 +213,22 @@ class _ResultRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: selected ? AppTokens.green : Colors.transparent,
-                  border: selected ? null : Border.all(color: AppTokens.hair2, width: 1.5),
+                  border: selected
+                      ? null
+                      : Border.all(color: AppTokens.hair2, width: 1.5),
                 ),
-                child: selected ? const Icon(Icons.check, size: 15, color: Colors.white) : null,
+                child: selected
+                    ? const Icon(Icons.check, size: 15, color: Colors.white)
+                    : null,
               ),
             ),
           ),
-          BrandAvatar(serviceKey: draft.serviceKey, fallbackName: draft.name, size: 40, circle: true),
+          BrandAvatar(
+            serviceKey: draft.serviceKey,
+            fallbackName: draft.name,
+            size: 40,
+            circle: true,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: GestureDetector(
@@ -214,16 +243,30 @@ class _ResultRow extends StatelessWidget {
                       draft.name.isEmpty ? 'İsimsiz' : draft.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600, color: AppTokens.text),
+                      style: const TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppTokens.text,
+                      ),
                     ),
                     const SizedBox(height: 2),
-                    Text(amountText, style: const TextStyle(fontSize: 13, color: AppTokens.muted)),
+                    Text(
+                      amountText,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTokens.muted,
+                      ),
+                    ),
                     if (draft.duplicateOf != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 3),
                         child: Text(
                           'Zaten ekli olabilir: ${draft.duplicateOf}',
-                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTokens.amberText),
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppTokens.amberText,
+                          ),
                         ),
                       )
                     else if (needsCheck)
@@ -231,9 +274,20 @@ class _ResultRow extends StatelessWidget {
                         padding: EdgeInsets.only(top: 3),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, size: 12, color: AppTokens.amber),
+                            Icon(
+                              Icons.error_outline,
+                              size: 12,
+                              color: AppTokens.amber,
+                            ),
                             SizedBox(width: 4),
-                            Text('kontrol et', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppTokens.amber)),
+                            Text(
+                              'kontrol et',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: AppTokens.amber,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -244,9 +298,14 @@ class _ResultRow extends StatelessWidget {
           ),
           const Padding(
             padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.chevron_right, size: 18, color: AppTokens.tertiary),
+            child: Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppTokens.tertiary,
+            ),
           ),
         ],
+      ),
       ),
     );
   }

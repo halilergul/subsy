@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:subsy/app/theme/app_tokens.dart';
 import 'package:subsy/features/subscription_import/domain/recognized_draft.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/subscriptions/presentation/widgets/currency_selector.dart';
 import 'package:subsy/features/subscriptions/presentation/widgets/period_selector.dart';
 import 'package:subsy/shared/constants/category_style.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
+import 'package:subsy/shared/widgets/glass/glass_surface.dart';
 
 /// An editable recognized-subscription card for the review screen (US2).
 /// Every field is editable; low-confidence fields get a "kontrol et" hint and
@@ -54,9 +56,11 @@ class _ImportDraftCardState extends State<ImportDraftCard> {
     final theme = Theme.of(context);
     final c = _d.confidence;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassSurface(
+        radius: 18,
+        fill: GlassFill.soft,
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +90,7 @@ class _ImportDraftCardState extends State<ImportDraftCard> {
               const SizedBox(height: 8),
               _Badge(
                 icon: Icons.copy_all_outlined,
-                color: Colors.amber,
+                color: AppTokens.amber,
                 text: 'Zaten ekli olabilir: ${_d.duplicateOf}',
               ),
             ],

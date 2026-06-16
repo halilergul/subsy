@@ -12,3 +12,12 @@ class FreePremiumStatus implements PremiumStatus {
   @override
   bool get isPremium => false;
 }
+
+/// Stub that reports premium — used by the in-app debug toggle to preview the
+/// premium UI before the RevenueCat paywall ships.
+class PremiumActive implements PremiumStatus {
+  const PremiumActive();
+
+  @override
+  bool get isPremium => true;
+}

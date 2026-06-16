@@ -9,6 +9,7 @@ import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
 import 'package:subsy/shared/utils/money_format.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 import 'package:subsy/shared/constants/category_style.dart';
 
 /// Turkish category labels (shared with the legacy form screen).
@@ -71,11 +72,15 @@ class AddFormSheetShell extends StatelessWidget {
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
-        child: DecoratedBox(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          child: DecoratedBox(
           decoration: const BoxDecoration(
-            color: AppTokens.sheet,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: AppTokens.hair2, width: 0.5)),
+            gradient: AppTokens.sheetSurface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            border: Border(
+              top: BorderSide(color: AppTokens.glassInnerHighlight, width: 1),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -91,6 +96,7 @@ class AddFormSheetShell extends StatelessWidget {
               ),
               Flexible(child: child),
             ],
+          ),
           ),
         ),
       ),
@@ -274,65 +280,18 @@ class _AddSubscriptionFormState extends ConsumerState<AddSubscriptionForm> {
 
   Widget _header() {
     final name = _controller.state.name;
-    final title = name.isEmpty ? 'Yeni abonelik' : name;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 2, 8, 10),
-      child: Row(
-        children: [
-          if (widget.onBack != null)
-            TextButton(
-              onPressed: widget.onBack,
-              child: const Text(
-                'Geri',
-                style: TextStyle(
-                  color: AppTokens.accentFg,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            )
-          else
-            const SizedBox(width: 48),
-          Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppTokens.text,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          _closeButton(),
-        ],
-      ),
+    final title = name.isEmpty ? 'Yeni Abonelik' : name;
+    return GlassSheetHeader(
+      title: title,
+      onBack: widget.onBack,
+      onClose: widget.onClose,
     );
   }
-
-  Widget _closeButton() => Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: Material(
-      color: AppTokens.fill,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: widget.onClose,
-        child: const SizedBox(
-          width: 32,
-          height: 32,
-          child: Icon(Icons.close, size: 17, color: AppTokens.muted),
-        ),
-      ),
-    ),
-  );
 
   Widget _brandPreview(SubscriptionFormState s) {
     final cat = s.category;
     final catColor = cat != null ? categoryColor(cat) : AppTokens.tertiary;
-    final name = s.name.isEmpty ? 'Yeni abonelik' : s.name;
+    final name = s.name.isEmpty ? 'Yeni Abonelik' : s.name;
     final catLabel = cat != null ? kCategoryLabels[cat]! : 'Diğer';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

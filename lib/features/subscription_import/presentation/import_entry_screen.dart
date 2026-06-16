@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:subsy/app/theme/app_tokens.dart';
+import 'package:subsy/shared/widgets/glass/glass_buttons.dart';
+import 'package:subsy/shared/widgets/glass/glass_sheet.dart';
+import 'package:subsy/shared/widgets/glass/glass_surface.dart';
 
 /// Source-picker view for the import flow (US1/US3). Shown when the user is
 /// premium and no recognition is running.
@@ -23,33 +27,59 @@ class ImportEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-      children: [
-        Text('Aboneliği otomatik tanı', style: theme.textTheme.titleLarge),
-        const SizedBox(height: 8),
-        Text(
-          'Bir ekran görüntüsü, makbuz fotoğrafı ya da App Store / Play abonelik '
-          'ekranından aboneliklerini otomatik ekle. Her şey cihazında işlenir — '
-          'hiçbir veri dışarı çıkmaz.',
-          style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Aboneliği Otomatik Tanı',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppTokens.text,
+            letterSpacing: -0.3,
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
+        const Text(
+          'Bir ekran görüntüsü, makbuz fotoğrafı ya da App Store / Play abonelik '
+          'ekranından aboneliklerini otomatik ekle.',
+          style: TextStyle(fontSize: 14, color: AppTokens.muted, height: 1.45),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Icon(Icons.shield_outlined, size: 15, color: AppTokens.green),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text('Her şey cihazında işlenir — hiçbir veri dışarı çıkmaz.',
+                  style: TextStyle(
+                      fontSize: 12.5,
+                      color: AppTokens.green.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w500)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
         _SourceTile(
           icon: Icons.photo_library_outlined,
-          title: 'Galeriden seç',
+          color: AppTokens.accent,
+          title: 'Galeriden Seç',
           subtitle: 'Ekran görüntüsü veya kaydedilmiş makbuz',
           onTap: onGallery,
         ),
         _SourceTile(
           icon: Icons.photo_camera_outlined,
-          title: 'Fotoğraf çek',
+          color: const Color(0xFF3E63DD),
+          title: 'Fotoğraf Çek',
           subtitle: 'Kağıt makbuzu kamerayla tara',
           onTap: onCamera,
         ),
         _SourceTile(
-          icon: Icons.apple_outlined,
+          icon: Icons.storefront_outlined,
+          color: const Color(0xFF12A594),
           title: 'App Store / Play aboneliklerim',
           subtitle: 'Sistem abonelik ekranının görüntüsünden içe aktar',
           onTap: () => _showAppStoreGuide(context),
@@ -57,45 +87,49 @@ class ImportEntryView extends StatelessWidget {
         if (onPdf != null)
           _SourceTile(
             icon: Icons.picture_as_pdf_outlined,
-            title: 'PDF içe aktar',
+            color: const Color(0xFFE5484D),
+            title: 'PDF İçe Aktar',
             subtitle: 'Fatura / makbuz PDF dosyası',
             onTap: onPdf!,
           ),
-      ],
+        ],
+      ),
     );
   }
 
   void _showAppStoreGuide(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('App Store / Play aboneliklerin',
-                style: Theme.of(ctx).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            const Text(
-              'Uygulamalar, mağaza aboneliklerini doğrudan okuyamaz. Bunun yerine '
-              'sistem abonelik ekranını aç, ekran görüntüsü al ve burada seç:',
-            ),
-            const SizedBox(height: 12),
-            const _GuideStep(n: '1', text: 'iOS: Ayarlar → Apple Kimliği → Abonelikler'),
-            const _GuideStep(n: '2', text: 'Android: Play Store → Abonelikler'),
-            const _GuideStep(n: '3', text: 'Ekran görüntüsü al, sonra galeriden seç'),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                onAppStore();
-              },
-              icon: const Icon(Icons.photo_library_outlined),
-              label: const Text('Ekran görüntüsünü seç'),
-            ),
-          ],
+    showGlassSheet<void>(
+      context,
+      builder: (ctx) => GlassSheet(
+        title: 'App Store / Play Aboneliklerin',
+        onClose: () => Navigator.of(ctx).pop(),
+        contentHeight: true,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Uygulamalar, mağaza aboneliklerini doğrudan okuyamaz. Bunun yerine '
+                'sistem abonelik ekranını aç, ekran görüntüsü al ve burada seç:',
+                style: TextStyle(fontSize: 14, color: AppTokens.muted, height: 1.45),
+              ),
+              const SizedBox(height: 16),
+              const _GuideStep(n: '1', text: 'iOS: Ayarlar → Apple Kimliği → Abonelikler'),
+              const _GuideStep(n: '2', text: 'Android: Play Store → Abonelikler'),
+              const _GuideStep(n: '3', text: 'Ekran görüntüsü al, sonra galeriden seç'),
+              const SizedBox(height: 20),
+              GoldButton(
+                label: 'Ekran Görüntüsünü Seç',
+                icon: Icons.photo_library_outlined,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onAppStore();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -110,28 +144,43 @@ class ImportLockedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.auto_awesome, size: 56, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
-            Text('Otomatik tanıma Premium', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(
-              'Makbuz, ekran görüntüsü ve App Store aboneliklerinden otomatik '
-              'abonelik ekleme Premium ile gelir. Aboneliklerini elle eklemek '
-              'her zaman ücretsiz.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 36, 32, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              gradient: AppTokens.accentGradient,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color.fromRGBO(199, 162, 86, 0.45),
+                    blurRadius: 36,
+                    offset: Offset(0, 14)),
+              ],
             ),
-            const SizedBox(height: 24),
-            FilledButton(onPressed: onUpgrade, child: const Text('Premium’a geç')),
-          ],
-        ),
+            child: const Icon(Icons.auto_awesome, size: 34, color: AppTokens.onAccent),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Otomatik Tanıma Premium',
+            style: TextStyle(
+                fontSize: 19, fontWeight: FontWeight.w700, color: AppTokens.text),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Makbuz, ekran görüntüsü ve App Store aboneliklerinden otomatik '
+            'abonelik ekleme Premium ile gelir. Aboneliklerini elle eklemek '
+            'her zaman ücretsiz.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: AppTokens.muted, height: 1.45),
+          ),
+          const SizedBox(height: 24),
+          GoldButton(label: "Premium'a Geç", onTap: onUpgrade),
+        ],
       ),
     );
   }
@@ -140,27 +189,59 @@ class ImportLockedView extends StatelessWidget {
 class _SourceTile extends StatelessWidget {
   const _SourceTile({
     required this.icon,
+    required this.color,
     required this.title,
     required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
+  final Color color;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: Icon(icon, size: 28),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassSurface(
+        radius: 16,
+        fill: GlassFill.soft,
         onTap: onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, size: 21, color: color),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppTokens.text)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 12.5, color: AppTokens.muted, height: 1.3)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, size: 18, color: AppTokens.tertiary),
+          ],
+        ),
       ),
     );
   }
@@ -174,13 +255,30 @@ class _GuideStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 12, child: Text(n, style: const TextStyle(fontSize: 12))),
+          Container(
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppTokens.accentFg.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Text(n,
+                style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: AppTokens.accentFg)),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(text,
+                  style: const TextStyle(fontSize: 14, color: AppTokens.text, height: 1.35)),
+            ),
+          ),
         ],
       ),
     );

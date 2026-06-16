@@ -57,6 +57,7 @@ dependencies:
   # US4 — PDF receipts: pick a file + pure-Dart text extraction (offline, free).
   file_picker: ^8.1.4
   syncfusion_flutter_pdf: ^33.2.8
+  soft_edge_blur: ^0.1.3
 
 dev_dependencies:
   flutter_test:

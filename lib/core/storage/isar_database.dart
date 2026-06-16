@@ -29,7 +29,10 @@ class IsarDatabase {
     if (existing != null) return IsarDatabase._(existing);
 
     final dir = await getApplicationDocumentsDirectory();
-    final isar = await Isar.open(_schemas, directory: dir.path, name: name);
+    // inspector:false — the debug-only Isar Connect inspector spawns a
+    // background connection that crashes (EXC_BAD_ACCESS) on physical iOS debug
+    // builds; disabling it restores `flutter run` + hot reload on device.
+    final isar = await Isar.open(_schemas, directory: dir.path, name: name, inspector: false);
     return IsarDatabase._(isar);
   }
 
@@ -38,7 +41,7 @@ class IsarDatabase {
   static Future<IsarDatabase> openAt(String directory, {String name = 'subsy'}) async {
     final existing = Isar.getInstance(name);
     if (existing != null) return IsarDatabase._(existing);
-    final isar = await Isar.open(_schemas, directory: directory, name: name);
+    final isar = await Isar.open(_schemas, directory: directory, name: name, inspector: false);
     return IsarDatabase._(isar);
   }
 

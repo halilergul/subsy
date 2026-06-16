@@ -28,7 +28,20 @@ void main() {
     );
   }
 
-  setUp(() => repo = FakeOnboardingRepository());
+  setUp(() {
+    repo = FakeOnboardingRepository();
+    // Freeze the ambient-background drift so pumpAndSettle can settle.
+    TestWidgetsFlutterBinding.ensureInitialized()
+            .platformDispatcher
+            .accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+  });
+
+  tearDown(() {
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .clearAccessibilityFeaturesTestValue();
+  });
 
   testWidgets('shows the first slide and a skip action', (tester) async {
     await tester.pumpWidget(harness());
@@ -66,7 +79,7 @@ void main() {
     // "Başla" surfaces the in-context notification pre-prompt.
     await tester.tap(find.text('Başla'));
     await tester.pumpAndSettle();
-    expect(find.text('Bildirimleri aç'), findsOneWidget);
+    expect(find.text('Bildirimleri Aç'), findsOneWidget);
     expect(find.text('Şimdilik geç'), findsOneWidget);
 
     // Postponing still completes — never blocks.

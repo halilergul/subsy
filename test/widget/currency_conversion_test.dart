@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subsy/features/currency/application/currency_providers.dart';
 import 'package:subsy/features/currency/domain/exchange_rates.dart';
-import 'package:subsy/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:subsy/features/dashboard/presentation/glass_dashboard.dart';
 import 'package:subsy/features/subscriptions/application/subscription_providers.dart';
 import 'package:subsy/features/subscriptions/domain/enums.dart';
 import 'package:subsy/features/subscriptions/domain/subscription.dart';
-import 'package:subsy/features/subscriptions/presentation/subscription_form_screen.dart';
+import 'package:subsy/features/subscriptions/presentation/widgets/add_form_sheet.dart';
 
 import '../support/fakes.dart';
 
@@ -54,7 +54,7 @@ void main() {
         exchangeRatesProvider.overrideWith((ref) => Stream.value(rateData)),
         targetCurrencyProvider.overrideWith((ref) => Stream.value(target)),
       ],
-      child: const MaterialApp(home: DashboardScreen()),
+      child: const MaterialApp(home: Scaffold(body: GlassDashboard())),
     ));
     await tester.pumpAndSettle();
   }
@@ -81,7 +81,7 @@ void main() {
     await pumpDashboard(tester, premium: false, rateData: rates);
     // Free multi-currency: per-currency chips (real, un-converted) + upsell;
     // the converted unified total and its FX caption are gated away.
-    expect(find.text('Tek para biriminde toplam'), findsOneWidget);
+    expect(find.textContaining('Tek para biriminde toplam'), findsOneWidget);
     expect(find.textContaining('Kurlar:'), findsNothing);
   });
 
@@ -113,7 +113,11 @@ void main() {
         exchangeRatesProvider.overrideWith((ref) => Stream.value(rates)),
         targetCurrencyProvider.overrideWith((ref) => Stream.value(target)),
       ],
-      child: const MaterialApp(home: SubscriptionFormScreen()),
+      child: MaterialApp(
+        home: Scaffold(
+          body: AddSubscriptionForm(onClose: () {}, onSaved: () {}),
+        ),
+      ),
     ));
     await tester.pumpAndSettle();
   }

@@ -26,11 +26,32 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
 });
 
 /// Offline brand catalog resolver (FR-010..014).
-final brandResolverProvider = Provider<BrandResolver>((ref) => const BrandResolver());
+final brandResolverProvider = Provider<BrandResolver>(
+  (ref) => const BrandResolver(),
+);
 
-/// Premium status. Stub = free tier; the `paywall` feature OVERRIDES this
-/// provider with a RevenueCat-backed implementation (research.md D6).
-final premiumStatusProvider = Provider<PremiumStatus>((ref) => const FreePremiumStatus());
+/// TEMP debug toggle: flips the premium stub at runtime so the premium UI can
+/// be tested before the RevenueCat paywall ships. Driven by the Settings switch
+/// (gated by `kShowDebugPremiumToggle`). Remove with the paywall feature.
+class PremiumOverride extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+final premiumOverrideProvider = NotifierProvider<PremiumOverride, bool>(
+  PremiumOverride.new,
+);
+
+/// Premium status. Stub = free tier (or premium when the debug toggle is on);
+/// the `paywall` feature OVERRIDES this provider with a RevenueCat-backed
+/// implementation (research.md D6).
+final premiumStatusProvider = Provider<PremiumStatus>(
+  (ref) => ref.watch(premiumOverrideProvider)
+      ? const PremiumActive()
+      : const FreePremiumStatus(),
+);
 
 /// Create funnel — enforces validation, brand enrichment, and the free limit.
 final addSubscriptionProvider = Provider<AddSubscription>((ref) {

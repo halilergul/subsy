@@ -50,10 +50,10 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Abonelik ekle'), findsOneWidget);
+    expect(find.text('Abonelik Ekle'), findsOneWidget);
     expect(find.text('Servis ara'), findsOneWidget); // search hint
-    expect(find.text('Popüler servisler'), findsOneWidget);
-    expect(find.text('Dokümandan tara'), findsOneWidget);
+    expect(find.text('Popüler Servisler'), findsOneWidget);
+    expect(find.text('Dokümandan Tara'), findsOneWidget);
     expect(find.text('Netflix'), findsOneWidget);
   });
 
@@ -86,6 +86,6 @@ void main() {
     expect(repo.items.first.name, 'Netflix');
     expect(repo.items.first.amount, 50);
     expect(repo.items.first.serviceKey, 'netflix'); // brand enrichment ran
-    expect(find.text('Abonelik ekle'), findsNothing);
+    expect(find.text('Abonelik Ekle'), findsNothing);
   });
 }

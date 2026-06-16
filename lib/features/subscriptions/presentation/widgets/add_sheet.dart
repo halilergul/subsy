@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:subsy/app/router/app_router.dart';
+import 'package:subsy/app/theme/app_text.dart';
 import 'package:subsy/app/theme/app_tokens.dart';
 import 'package:subsy/features/subscriptions/domain/brand_catalog.dart';
 import 'package:subsy/features/subscriptions/domain/brand_catalog_entry.dart';
+import 'package:subsy/features/subscription_import/presentation/import_screen.dart';
 import 'package:subsy/features/subscriptions/presentation/widgets/add_form_sheet.dart';
 import 'package:subsy/shared/widgets/brand_avatar.dart';
+import 'package:subsy/shared/widgets/glass_app_bar.dart';
 
 /// Opens the add-subscription entry sheet: a brand picker (search + popular
 /// grid + "Diğer") with a pinned "scan a document" footer. Selecting a brand
@@ -81,9 +82,13 @@ class _AddSheetState extends State<_AddSheet> {
     );
   }
 
+  /// Close this sheet first, then present the scan flow as its own full-height
+  /// sheet from the dashboard — avoids stacking a second modal on top of this
+  /// one. A successful import refreshes the dashboard reactively.
   Future<void> _scan() async {
-    final saved = await context.push<bool>(Routes.importSubscription);
-    if (saved == true && mounted) Navigator.of(context).pop();
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    await showImportSheet(navigator.context);
   }
 
   @override
@@ -125,30 +130,38 @@ class _AddSheetState extends State<_AddSheet> {
             child: Column(
               children: [
                 _grabber(),
-                _header(),
+                GlassSheetHeader(
+                  title: 'Abonelik Ekle',
+                  onClose: () => Navigator.of(context).pop(),
+                ),
                 _search(),
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                    children: [
-                      if (noMatch) ...[
-                        _searchCreateRow(q),
-                        const SizedBox(height: 18),
-                      ],
-                      Padding(
-                        padding: const EdgeInsets.only(left: 2, bottom: 14),
-                        child: Text(
-                          q.isEmpty ? 'Popüler servisler' : 'Sonuçlar',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppTokens.muted,
-                            letterSpacing: 0.3,
+                  // Frost the list's top edge as it scrolls under the search —
+                  // the same liquid-glass falloff used on the screens.
+                  child: glassScrollBlur(
+                    context,
+                    bandHeight: 26,
+                    sigma: 10,
+                    backgroundColor: AppTokens.sheet,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      children: [
+                        if (noMatch) ...[
+                          _searchCreateRow(q),
+                          const SizedBox(height: 18),
+                        ],
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2, bottom: 14),
+                          child: Text(
+                            q.isEmpty ? 'Popüler Servisler' : 'Sonuçlar',
+                            style: AppText.footnote.copyWith(
+                              color: AppTokens.muted,
+                            ),
                           ),
                         ),
-                      ),
-                      _grid(grid, showOther: q.isEmpty),
-                    ],
+                        _grid(grid, showOther: q.isEmpty),
+                      ],
+                    ),
                   ),
                 ),
                 _footer(),
@@ -167,39 +180,6 @@ class _AddSheetState extends State<_AddSheet> {
     decoration: BoxDecoration(
       color: AppTokens.grabber,
       borderRadius: BorderRadius.circular(999),
-    ),
-  );
-
-  Widget _header() => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 2, 8, 10),
-    child: Row(
-      children: [
-        const Expanded(
-          child: Text(
-            'Abonelik ekle',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppTokens.text,
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
-        Material(
-          color: AppTokens.fill,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => Navigator.of(context).pop(),
-            child: const SizedBox(
-              width: 32,
-              height: 32,
-              child: Icon(Icons.close, size: 17, color: AppTokens.muted),
-            ),
-          ),
-        ),
-      ],
     ),
   );
 
@@ -388,7 +368,7 @@ class _AddSheetState extends State<_AddSheet> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'Dokümandan tara',
+                      'Dokümandan Tara',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,

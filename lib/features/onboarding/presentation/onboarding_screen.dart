@@ -7,6 +7,8 @@ import 'package:subsy/features/notifications/application/notification_providers.
 import 'package:subsy/features/onboarding/application/onboarding_providers.dart';
 import 'package:subsy/features/onboarding/presentation/widgets/cross_platform_sheet.dart';
 import 'package:subsy/features/onboarding/presentation/widgets/slide_visuals.dart';
+import 'package:subsy/shared/widgets/glass/ambient_background.dart';
+import 'package:subsy/shared/widgets/glass/glass_buttons.dart';
 
 /// First-run onboarding carousel: four differentiated slides, a progress
 /// indicator, skip-from-anywhere, an in-context notification pre-prompt on the
@@ -104,27 +106,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTokens.bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _skipRow(),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: _slides.length,
-                onPageChanged: (i) => setState(() {
-                  _index = i;
-                  _priming = false;
-                }),
-                itemBuilder: (_, i) => _Slide(
-                  data: _slides[i],
-                  onCrossPlatform: () => showCrossPlatformSheet(context),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: AmbientBackground()),
+          SafeArea(
+            child: Column(
+              children: [
+                _skipRow(),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _controller,
+                    itemCount: _slides.length,
+                    onPageChanged: (i) => setState(() {
+                      _index = i;
+                      _priming = false;
+                    }),
+                    itemBuilder: (_, i) => _Slide(
+                      data: _slides[i],
+                      onCrossPlatform: () => showCrossPlatformSheet(context),
+                    ),
+                  ),
                 ),
-              ),
+                _footer(),
+              ],
             ),
-            _footer(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -161,7 +168,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           if (_isLast && _priming)
             Column(
               children: [
-                _PrimaryButton(label: 'Bildirimleri aç', onTap: _enableNotificationsThenFinish),
+                GoldButton(label: 'Bildirimleri Aç', onTap: _enableNotificationsThenFinish),
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: _finish,
@@ -171,7 +178,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             )
           else
-            _PrimaryButton(label: _isLast ? 'Başla' : 'İleri', onTap: _next),
+            GoldButton(label: _isLast ? 'Başla' : 'İleri', onTap: _next),
         ],
       ),
     );
@@ -321,39 +328,3 @@ class _Tag extends StatelessWidget {
   }
 }
 
-class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: AppTokens.accentGradient,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(color: Color.fromRGBO(199, 162, 86, 0.3), blurRadius: 20, offset: Offset(0, 8)),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTokens.onAccent),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
